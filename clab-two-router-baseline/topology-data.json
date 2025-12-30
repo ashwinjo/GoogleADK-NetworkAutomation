@@ -1,0 +1,101 @@
+{
+  "name": "two-router-baseline",
+  "type": "clab",
+  "clab": {
+    "config": {
+      "prefix": "clab",
+      "mgmt": {
+        "network": "clab",
+        "bridge": "br-45bfaa2c815f",
+        "ipv4-subnet": "172.20.20.0/24",
+        "ipv4-gw": "172.20.20.1",
+        "ipv6-subnet": "3fff:172:20:20::/64",
+        "ipv6-gw": "3fff:172:20:20::1",
+        "external-access": true
+      }
+    }
+  },
+  "ssh-pub-keys": ["ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCQbemInk1apsuL7YApu5055UuhCZrrIi+VDG9Mg51fbwJQ7MWAlazgS3gIZfNBbvKeQZvVSIIxfU0JaSjR9CcHaOV8XMPouNbp4g136HOs2SLTrdUrSh4RFSrNj1W9DRgXd3pZxUKfrM4U++JOxm4mSRboOMcUnHwQM0QPu2OZoHZ7M192ZjG3fLhmA7KA3KL6HghYwnferC6F7B3MDp9sNeZ0a/8a8EqSMV0TOye0u034F7z8edpDYAaDyhL3gqivmyULgqr3ErHsVJVg/0q8o6T9+4EY3UYLYqDgYymgLJZtHynIH60Xf/frNVFlUoN+Eu2NRDHUu+xQcJt1Sbc6GHBATHT0QAk0iXdL2+qvlYqa0v0OGA2iVsvgDUVx93CFfX21430hiZflxFttDjQyHnh3fdwDE4MxmR6rmN9kVir71SClIId55BAdAdtshXnqH+yblyugXyZS01UftVdTbSl5RBlputxWDIHZ5LaHqCQOAwmn4g4tLbdfYLJlM88="],
+  "nodes": {
+    "r1": {
+      "index": "0",
+      "shortname": "r1",
+      "longname": "clab-two-router-baseline-r1",
+      "fqdn": "r1.two-router-baseline.io",
+      "group": "",
+      "labdir": "/home/ubuntusand/containerlanAsh/clab-two-router-baseline/r1",
+      "kind": "linux",
+      "image": "frrouting/frr:v7.5.1",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.20.20.2",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "3fff:172:20:20::2",
+      "mgmt-ipv6-prefix-length": 64,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-45bfaa2c815f",
+        "clab-node-group": "",
+        "clab-node-kind": "linux",
+        "clab-node-lab-dir": "/home/ubuntusand/containerlanAsh/clab-two-router-baseline/r1",
+        "clab-node-longname": "clab-two-router-baseline-r1",
+        "clab-node-name": "r1",
+        "clab-node-type": "",
+        "clab-owner": "ubuntusand",
+        "clab-topo-file": "/home/ubuntusand/containerlanAsh/topology.yaml",
+        "containerlab": "two-router-baseline"
+      },
+      "port-bindings": [
+      ]
+    },
+    "r2": {
+      "index": "1",
+      "shortname": "r2",
+      "longname": "clab-two-router-baseline-r2",
+      "fqdn": "r2.two-router-baseline.io",
+      "group": "",
+      "labdir": "/home/ubuntusand/containerlanAsh/clab-two-router-baseline/r2",
+      "kind": "linux",
+      "image": "frrouting/frr:v7.5.1",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.20.20.3",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "3fff:172:20:20::3",
+      "mgmt-ipv6-prefix-length": 64,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-45bfaa2c815f",
+        "clab-node-group": "",
+        "clab-node-kind": "linux",
+        "clab-node-lab-dir": "/home/ubuntusand/containerlanAsh/clab-two-router-baseline/r2",
+        "clab-node-longname": "clab-two-router-baseline-r2",
+        "clab-node-name": "r2",
+        "clab-node-type": "",
+        "clab-owner": "ubuntusand",
+        "clab-topo-file": "/home/ubuntusand/containerlanAsh/topology.yaml",
+        "containerlab": "two-router-baseline"
+      },
+      "port-bindings": [
+      ]
+    }
+  },
+  "links": [
+    {
+      "endpoints": {
+        "a": {
+          "node": "r1",
+          "interface": "eth1",
+          "mac": "aa:c1:ab:78:11:cd",
+          "peer": "z"
+        },
+        "z": {
+          "node": "r2",
+          "interface": "eth1",
+          "mac": "aa:c1:ab:8c:c7:8c",
+          "peer": "a"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+---
+r1:
+    username: 
+    password: 
+    platform: linux
+    hostname: 172.31.255.3
+r2:
+    username: 
+    password: 
+    platform: linux
+    hostname: 172.31.255.2
