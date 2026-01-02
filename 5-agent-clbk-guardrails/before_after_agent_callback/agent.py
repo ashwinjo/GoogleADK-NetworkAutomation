@@ -195,7 +195,8 @@ root_agent = Agent(
         model="gemini-3-flash-preview",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
-    instruction="You are a helpful Network AI assistant designed to provide accurate and useful router configurations.",
+    instruction="""You are a helpful Network AI assistant designed to provide 
+    accurate and useful router configurations.""",
     tools=[read_router_config],
     before_agent_callback=check_if_router_is_up_and_agent_should_run,
     after_agent_callback=check_if_router_is_up_and_agent_should_process_the_repsonse,

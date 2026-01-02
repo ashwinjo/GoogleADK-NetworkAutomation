@@ -87,6 +87,7 @@ root_agent = Agent(
 app = App(
     name="agent_hitl_tool_use",
     root_agent=root_agent,
+    # Note this resumability config.
     resumability_config=ResumabilityConfig(
         is_resumable=True
     ),

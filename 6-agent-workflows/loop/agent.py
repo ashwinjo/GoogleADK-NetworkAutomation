@@ -1,18 +1,3 @@
-# ruff: noqa
-# Copyright 2025 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """
 Author: Ashwin Joshi
 
@@ -27,8 +12,6 @@ Useful links:
   
 """
 
-import datetime
-from zoneinfo import ZoneInfo
 from google.adk.tools.tool_context import ToolContext
 from google.adk.agents import Agent
 from google.adk.apps.app import App
@@ -38,7 +21,7 @@ from google.genai import types
 from dotenv import load_dotenv
 load_dotenv()
 
-from google.adk.agents import ParallelAgent, SequentialAgent, LoopAgent
+from google.adk.agents import SequentialAgent, LoopAgent
 import os
 import google.auth
 import logging
@@ -75,6 +58,31 @@ def exit_loop(tool_context: ToolContext):
   # Return empty dict as tools should typically return JSON-serializable output
   return {}
 
+SYSTEM_PROMPT_NETWORK_MONITORING = """
+You are a network monitoring assistant.
+
+Your responsibilities:
+- Collect network signals using the provided tools
+- Assess overall network health
+- You have access ONLY to the following tools:
+    - check_network_connectivity()
+    - check_network_latency()
+    - check_security_alerts()
+    - check_network_status()
+
+- Explicitly classify the system as:
+  - healthy
+  - degraded
+  - unstable
+
+Do NOT suggest remediation actions.
+Do NOT assume problems are fixed unless verified.
+
+At the end of your analysis, clearly state:
+overall_health = <healthy|degraded|unstable>
+"""
+
+
 network_monitoring_agent = Agent(
     name="NetworkMonitoringAgent",
     model=Gemini(
@@ -82,12 +90,7 @@ network_monitoring_agent = Agent(
         temperature=0.0,
     ),
     description="This agent monitors network status, connectivity, latency, and security alerts.",
-    instruction="""You are a network monitoring assistant specialized in checking network health and detecting issues.
-    Your role is to monitor the network by checking connectivity, latency, security alerts, and overall network status.
-    Use the available monitoring tools (check_network_connectivity, check_network_latency, check_security_alerts, check_network_status)
-    to identify any network problems. Report any issues found, including connectivity problems, high latency, or security threats.
-    Be thorough in your monitoring and provide detailed status reports.
-    """,
+    instruction=SYSTEM_PROMPT_NETWORK_MONITORING,
     tools=[
         check_network_connectivity,
         check_network_latency,
@@ -97,6 +100,30 @@ network_monitoring_agent = Agent(
     output_key="monitoring_results",
 )
 
+
+SYSTEM_PROMPT_NETWORK_REMEDIATION = """
+You are a network remediation agent operating inside an ADK LoopAgent.
+
+You are authorized to call exit_loop() ONLY under the following condition:
+- The most recent monitoring result explicitly reports:
+  overall_health = "healthy"
+- You have access ONLY to the following tools:
+  - restart_network_service()
+  - adjust_firewall_rules()
+  - fix_connectivity_issue()
+  - optimize_network_latency()
+  - block_security_threat()
+  - exit_loop()
+
+You must NOT:
+- Infer system health yourself
+- Override monitoring conclusions
+- Call exit_loop based on assumptions
+
+If the system is healthy, signal loop termination and state the reason.
+Otherwise, attempt remediation or state that no action is applicable.
+"""
+
 remediation_agent = Agent(
     name="RemediationAgent",
     model=Gemini(
@@ -104,18 +131,7 @@ remediation_agent = Agent(
         temperature=0.0,
     ),
     description="This agent attempts to fix network problems by restarting services, adjusting firewall rules, and optimizing network performance.",
-    instruction="""You are a network remediation assistant specialized in fixing network issues.
-    Your role is to attempt to resolve network problems detected by the monitoring agent.
-    Use the available remediation tools (restart_network_service, adjust_firewall_rules, fix_connectivity_issue,
-    optimize_network_latency, block_security_threat) to address issues such as:
-    - Connectivity problems: Use fix_connectivity_issue or restart_network_service
-    - High latency: Use optimize_network_latency
-    - Security threats: Use block_security_threat or adjust_firewall_rules
-    - Service failures: Use restart_network_service
-    Analyze the issue and apply the appropriate remediation steps.
-    Report the results of your remediation attempts.
-    If the network is stable, call the exit_loop tool to end the loop.
-    """,
+    instruction=SYSTEM_PROMPT_NETWORK_REMEDIATION,
     tools=[
         restart_network_service,
         adjust_firewall_rules,
@@ -139,9 +155,51 @@ start_agent = Agent(
     You will always output below text
     **Output:**
     Here is the customer complaint: <customer_complaint>
-    """,
-    output_key="start_results",
+    """
 )
+
+
+SYSTEM_PROMPT_SUMMARY_AGENT = """
+You are a Network Operations Summarizer.
+
+Your sole responsibility is to convert completed agent outputs into a factual, human-readable summary.
+You do NOT troubleshoot, analyze, recommend, or infer.
+
+You MUST use only the inputs explicitly provided below.
+
+Inputs:
+- monitoring_results: {monitoring_results}
+- remediation_results: {remediation_results}
+
+Rules:
+- Do NOT add new information
+- Do NOT infer causes or suggest next steps
+- Do NOT soften or exaggerate outcomes
+- If information is missing, explicitly state "Not reported"
+
+Output Requirements:
+Produce a single markdown table with the following columns:
+
+| Category | Details |
+
+Include these rows in order:
+- Monitoring Observations
+- Issues Detected
+- Remediation Actions Taken
+- Remediation Outcome
+- Loop Exit Reason
+- Final Network State
+
+If a category is not applicable, write "None reported".
+
+Tone:
+- Neutral
+- Precise
+- Operational
+
+Begin the summary immediately.
+"""
+
 summary_agent = Agent(
     name="SummaryAgent",
     model=Gemini(
@@ -149,11 +207,7 @@ summary_agent = Agent(
         temperature=0.0,
     ),
     description="This agent is the summary point of the workflow.",
-    instruction="""You are a network troubleshooting assistant specialized in summarizing the workflow. 
-    You will get the output from the previous agents
-    monitoring_results: {monitoring_results}
-    remediation_results: {remediation_results}
-    and you will summarize the output in tabular format.""",
+    instruction=SYSTEM_PROMPT_SUMMARY_AGENT,
     output_key="summary_results",
 )
 
