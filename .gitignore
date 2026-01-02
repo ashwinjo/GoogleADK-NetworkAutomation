@@ -197,5 +197,10 @@ my_env.tfvars
 
 # A2A Inspector
 tools/a2a-inspector/
+
+# Google Cloud SDK (large binaries)
+google-cloud-sdk/
+*.tar.gz
+*.tgz
 google-cloud-sdk/
 *.tar.gz
