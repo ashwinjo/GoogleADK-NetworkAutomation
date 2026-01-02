@@ -51,3 +51,72 @@ This project showcases multiple ADK capabilities through three different impleme
 - **Headless Operation**: CLI-based agent interaction
 
 ---
+
+Edit the Makefile to change the project name here based on the agent we will be calling
+
+```bash 
+# Launch local development server with hot-reload
+local-backend-basic-agent:
+	uv run uvicorn basic_agent.fast_api_app:app --host localhost --port 8000 --reload
+
+AND in fast_api_app.py file, change the import path to the correct one
+
+from basic_agent.app_utils.telemetry import setup_telemetry
+from basic_agent.app_utils.typing import Feedback
+```
+
+---
+
+## Troubleshooting / Known Issues
+
+### 1. Google Cloud Logging Initialization
+
+**Issue**: When initializing Google Cloud Logging, you need to explicitly pass the project ID to the `Client()` constructor, otherwise it may fail to initialize properly.
+
+**Solution**: 
+```python
+from google.cloud import logging as google_cloud_logging
+import google.auth
+
+_, project_id = google.auth.default()
+logging_client = google_cloud_logging.Client(project=project_id)  # Explicitly pass project
+logger = logging_client.logger(__name__)
+```
+
+### 2. OpenAPI/Swagger Documentation Error (500 Internal Server Error on `/openapi.json`)
+
+**Issue**: FastAPI's Swagger UI (`/docs`) may fail with "Internal Server Error" when trying to load `/openapi.json`. This is caused by ADK's internal Pydantic models containing `httpx.Client` fields that cannot be serialized to JSON schema by Pydantic 2.x.
+
+**Error**:
+```
+pydantic.errors.PydanticInvalidForJsonSchema: Cannot generate a JsonSchema 
+for core_schema.IsInstanceSchema (<class 'httpx.Client'>)
+```
+
+**Solution**: Override the default OpenAPI schema generation with error handling that filters out problematic routes:
+
+```python
+def custom_openapi():
+    """Generate OpenAPI schema with error handling for unsupported types."""
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    try:
+        from fastapi.openapi.utils import get_openapi
+        openapi_schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+        )
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+    except Exception as e:
+        # Filter routes that can be documented and skip problematic ones
+        # See fast_api_app.py for full implementation
+        ...
+
+app.openapi = custom_openapi
+```
+
+This allows the Swagger UI to load successfully, showing your custom endpoints while gracefully handling ADK's internal routes that cannot be documented.

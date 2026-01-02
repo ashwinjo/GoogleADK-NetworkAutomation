@@ -30,6 +30,10 @@ playground:
 local-backend:
 	uv run uvicorn app.fast_api_app:app --host localhost --port 8000 --reload
 
+# Launch local development server with hot-reload
+local-backend-basic-agent:
+	uv run uvicorn basic_agent.fast_api_app:app --host localhost --port 9000 --reload
+
 # ==============================================================================
 # Backend Deployment Targets
 # ==============================================================================
