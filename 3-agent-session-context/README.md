@@ -1,95 +1,68 @@
-# 3-agent-context
+# 3-agent-session-context
 
 A base ReAct agent built with Google's Agent Development Kit (ADK)
 Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
 
-## Project Structure
+---
 
-This project is organized as follows:
+## Network Use Case
 
-```
-3-agent-context/
-├── app/                 # Core application code
-│   ├── agent.py         # Main agent logic
-│   ├── fast_api_app.py  # FastAPI Backend server
-│   └── app_utils/       # App utilities and helpers
-├── tests/               # Unit, integration, and load tests
-├── Makefile             # Makefile for common commands
-├── GEMINI.md            # AI-assisted development guide
-└── pyproject.toml       # Project dependencies and configuration
-```
+**Multi-Turn NOC Assistant** - A context-aware Network Operations Center (NOC) troubleshooting assistant that maintains state across multiple conversation turns. Unlike stateless agents, this implementation demonstrates how to:
 
-> 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
+- **Persist Troubleshooting Context**: Remember which router is being investigated across multiple questions
+- **Build Progressive Diagnostics**: Each interaction builds on previous tool calls and findings
+- **Avoid Redundant Queries**: The agent recalls prior context instead of re-asking for information
+- **Maintain Session Continuity**: Track the active router, last tool used, and historical interactions
 
-## Requirements
+**Real-World Scenario**: A NOC engineer troubleshoots a router over multiple interactions:
+1. "Check BGP summary for router R1"
+2. "What's wrong with neighbor 192.168.1.3?" ← Agent remembers R1 context
+3. "Show me the interface status" ← Agent still knows we're working on R1
 
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
-- **make**: Build automation tool - [Install](https://www.gnu.org/software/make/) (pre-installed on most Unix-based systems)
+This pattern mirrors actual NOC workflows where troubleshooting happens incrementally, not in single-shot queries.
 
+## ADK Features Demonstrated
 
-## Quick Start (Local Testing)
+This project showcases stateful agent capabilities and session management:
 
-Install required packages and launch the local development environment:
+### 1. Session Management
 
-```bash
-make install && make playground
-```
-> **📊 Observability Note:** Agent telemetry (Cloud Trace) is always enabled. Prompt-response logging (GCS, BigQuery, Cloud Logging) is **disabled** locally, **enabled by default** in deployed environments (metadata only - no prompts/responses). See [Monitoring and Observability](#monitoring-and-observability) for details.
+- **InMemorySessionService**: Session creation, retrieval, and deletion
+- **Session Properties**: Access to `id`, `app_name`, `user_id`, `state`, `events`, and `last_update_time`
+- **State Initialization**: Pre-populate session state with initial values
+- **Session Lifecycle**: Create, use, and clean up sessions programmatically
 
-## Commands
+### 2. ToolContext - State Persistence
 
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `make install`       | Install all required dependencies using uv                                                  |
-| `make playground`    | Launch local development environment with backend and frontend - leveraging `adk web` command.|
-| `make deploy`        | Deploy agent to Cloud Run (use `IAP=true` to enable Identity-Aware Proxy, `PORT=8080` to specify container port) |
-| `make local-backend` | Launch local development server with hot-reload |
-| `make test`          | Run unit and integration tests                                                              |
-| `make lint`          | Run code quality checks (codespell, ruff, mypy)                                             |
+- **Tool State Management**: Store data in `tool_context.state` during tool execution
+- **Cross-Turn Data Sharing**: Information persisted across multiple agent turns
+- **Context Tracking**: Record active router and last tool used for continuity
+- **Structured State Updates**: Dictionary-based state management within tools
 
-For full command options and usage, refer to the [Makefile](Makefile).
+### 3. ReadonlyContext - Dynamic Instructions
 
+- **State-Aware Instructions**: Agent instructions that adapt based on current session state
+- **Dynamic Prompting**: Instruction changes reflect active troubleshooting context
+- **Context Injection**: Current router displayed in agent's system prompt
+- **Reactive Guidance**: Agent behavior adapts to what it already knows
 
-## Usage
+### 4. FunctionTool Wrapper
 
-This template follows a "bring your own agent" approach - you focus on your business logic, and the template handles everything else (UI, infrastructure, deployment, monitoring).
-1. **Develop:** Edit your agent logic in `app/agent.py`.
-2. **Test:** Explore your agent functionality using the local playground with `make playground`. The playground automatically reloads your agent on code changes.
-3. **Enhance:** When ready for production, run `uvx agent-starter-pack enhance` to add CI/CD pipelines, Terraform infrastructure, and evaluation notebooks.
+- **Tool Context Integration**: Wrapping Python functions with `FunctionTool` for state access
+- **Enhanced Tool Capabilities**: Tools gain access to session state via `tool_context` parameter
+- **State Injection**: ADK automatically provides `ToolContext` to wrapped functions
 
-The project includes a `GEMINI.md` file that provides context for AI tools like Gemini CLI when asking questions about your template.
+### 5. Output Key Management
 
+- **Response Persistence**: `output_key="response"` stores LLM responses in session state
+- **Historical Tracking**: Prior agent responses accessible in `session.state["response"]`
+- **Audit Trail**: Built-in conversation history for analysis or debugging
 
-## Deployment
+### 6. Multi-Turn Conversations
 
-You can deploy your agent to a Dev Environment using the following command:
+- **Stateful Interactions**: Each turn builds on previous conversation history
+- **Context Retention**: Agent "remembers" prior facts without re-querying tools
+- **Incremental Problem Solving**: Progressive diagnosis across multiple interactions
+- **Natural Conversation Flow**: Mimics real engineer-to-engineer troubleshooting dialogue
 
-```bash
-gcloud config set project <your-dev-project-id>
-make deploy
-```
-
-
-When ready for production deployment with CI/CD pipelines and Terraform infrastructure, run `uvx agent-starter-pack enhance` to add these capabilities.
-
-## Monitoring and Observability
-
-The application provides two levels of observability:
-
-**1. Agent Telemetry Events (Always Enabled)**
-- OpenTelemetry traces and spans exported to **Cloud Trace**
-- Tracks agent execution, latency, and system metrics
-
-**2. Prompt-Response Logging (Configurable)**
-- GenAI instrumentation captures LLM interactions (tokens, model, timing)
-- Exported to **Google Cloud Storage** (JSONL), **BigQuery** (external tables), and **Cloud Logging** (dedicated bucket)
-
-| Environment | Prompt-Response Logging |
-|-------------|-------------------------|
-| **Local Development** (`make playground`) | ❌ Disabled by default |
-
-**To enable locally:** Set `LOGS_BUCKET_NAME` and `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT`.
-
-See the [observability guide](https://googlecloudplatform.github.io/agent-starter-pack/guide/observability.html) for detailed instructions, example queries, and visualization options.
+---

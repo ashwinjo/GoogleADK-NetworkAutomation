@@ -3,93 +3,276 @@
 A base ReAct agent built with Google's Agent Development Kit (ADK)
 Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
 
-## Project Structure
+---
 
-This project is organized as follows:
+## Network Use Case
 
+**Production Observability & Monitoring** - Demonstrates comprehensive observability patterns for production agent deployments. In network operations, observability is critical for:
+
+- **Incident Response**: Debugging agent behavior during network outages
+- **Performance Optimization**: Identifying slow tool calls or model latency
+- **Compliance & Auditing**: Tracking all agent actions for regulatory requirements
+- **Cost Management**: Understanding LLM token usage and API costs
+- **Quality Assurance**: Validating agent decision-making through conversation traces
+
+### Real-World Scenario
+
+**NOC Agent Debugging**:
+- Agent fails to diagnose router issue correctly
+- Ops team needs to review: What tools were called? What did they return? How did the LLM reason?
+- Observability traces show: Agent called `ping_router` but misinterpreted packet loss percentage
+- Root cause identified: Tool output parsing issue
+- Fix deployed and validated through trace comparison
+
+**Cost Optimization**:
+- Finance notices high Gemini API costs
+- Observability shows: Agent making redundant tool calls in loops
+- Traces reveal: Agent not caching results, re-calling same tool multiple times
+- Optimization: Implement tool response caching
+- Cost reduction: 40% decrease in API calls
+
+---
+
+## ADK Features Demonstrated
+
+This project showcases two observability approaches:
+
+### 1. Basic Logging (`basic_logging/`)
+
+**Built-in Python Logging**
+
+- **Standard Library**: Uses Python's `logging` module
+- **Log Levels**: DEBUG, INFO, WARNING, ERROR for different event types
+- **Structured Format**: `'%(asctime)s - %(levelname)s - %(name)s - %(message)s'`
+- **Console Output**: Logs printed to terminal for local development
+
+**What Gets Logged**:
+- Agent initialization and configuration
+- Tool invocations with arguments
+- Model requests and responses
+- Session state changes
+- Error stack traces
+
+**Code Pattern**:
+```python
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+)
+
+# ADK automatically logs to this logger
+root_agent = Agent(
+    name="root_agent",
+    model=Gemini(...),
+    tools=[get_weather, get_current_time],
+)
 ```
-10-agent-observability/
-├── app/                 # Core application code
-│   ├── agent.py         # Main agent logic
-│   ├── fast_api_app.py  # FastAPI Backend server
-│   └── app_utils/       # App utilities and helpers
-├── tests/               # Unit, integration, and load tests
-├── Makefile             # Makefile for common commands
-├── GEMINI.md            # AI-assisted development guide
-└── pyproject.toml       # Project dependencies and configuration
+
+> You need to use -v tag when running your agent <br>
+
+> uv run adk web . -v --port 8501 --reload_agents
+
+**Advantages**:
+- Zero external dependencies
+- Simple setup for local development
+- Works offline
+- Lightweight performance overhead
+
+**Limitations**:
+- No structured trace visualization
+- Difficult to query across multiple sessions
+- No LLM-specific metrics (tokens, cost)
+- Limited to single process
+
+**Best For**:
+- Local development and debugging
+- Simple agents with few tools
+- Quick prototyping
+- Log file analysis
+
+### 2. Third-Party Logging (`third_party_logging/`)
+
+**Opik Integration - Advanced LLM Observability**
+
+- **Opik**: Open-source LLM observability platform (by Comet)
+- **ADK Integration**: `OpikTracer` + `track_adk_agent_recursive()`
+- **Rich Traces**: Hierarchical view of agent → model → tools
+- **LLM Metrics**: Token usage, cost, latency, model parameters
+- **Web UI**: Visual trace explorer and dashboard
+
+**What Gets Tracked**:
+- **Agent Traces**: Complete conversation flows
+- **Model Calls**: Prompt content, responses, token counts
+- **Tool Executions**: Tool name, arguments, results, duration
+- **Metadata**: Environment, model version, tags
+- **Spans**: Nested execution hierarchy
+
+**Code Pattern**:
+```python
+from opik.integrations.adk import OpikTracer, track_adk_agent_recursive
+
+# Configure Opik tracer
+opik_tracer = OpikTracer(
+    name="network-monitoring-agent",
+    tags=["production", "network", "monitoring"],
+    metadata={
+        "environment": "production",
+        "model": "gemini-3-flash-preview",
+        "framework": "google-adk",
+        "team": "noc-ops"
+    },
+    project_name="network-operations"
+)
+
+# Instrument agent - single function call
+track_adk_agent_recursive(root_agent, opik_tracer)
 ```
 
-> 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
+**Opik Dashboard Features**:
+- **Trace Explorer**: Visual tree of agent execution
+- **Filter & Search**: Query by tag, model, duration, error status
+- **Cost Analysis**: Track token usage and estimated API costs
+- **Performance Metrics**: Latency distributions, slow tool identification
+- **Comparison**: Compare traces side-by-side for debugging
+- **Alerts**: Set up alerts for errors or performance degradation
 
-## Requirements
+**Advantages**:
+- **Visual Debugging**: See execution flow graphically
+- **LLM-Specific Metrics**: Token counts, model parameters
+- **Cross-Session Analysis**: Query across multiple conversations
+- **Team Collaboration**: Share traces via web UI
+- **Cost Tracking**: Monitor LLM API costs
+- **Production-Ready**: Handles high-volume logging
 
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
-- **make**: Build automation tool - [Install](https://www.gnu.org/software/make/) (pre-installed on most Unix-based systems)
-
-
-## Quick Start (Local Testing)
-
-Install required packages and launch the local development environment:
-
+**Setup Requirements**:
 ```bash
-make install && make playground
-```
-> **📊 Observability Note:** Agent telemetry (Cloud Trace) is always enabled. Prompt-response logging (GCS, BigQuery, Cloud Logging) is **disabled** locally, **enabled by default** in deployed environments (metadata only - no prompts/responses). See [Monitoring and Observability](#monitoring-and-observability) for details.
-
-## Commands
-
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `make install`       | Install all required dependencies using uv                                                  |
-| `make playground`    | Launch local development environment with backend and frontend - leveraging `adk web` command.|
-| `make deploy`        | Deploy agent to Cloud Run (use `IAP=true` to enable Identity-Aware Proxy, `PORT=8080` to specify container port) |
-| `make local-backend` | Launch local development server with hot-reload |
-| `make test`          | Run unit and integration tests                                                              |
-| `make lint`          | Run code quality checks (codespell, ruff, mypy)                                             |
-
-For full command options and usage, refer to the [Makefile](Makefile).
-
-
-## Usage
-
-This template follows a "bring your own agent" approach - you focus on your business logic, and the template handles everything else (UI, infrastructure, deployment, monitoring).
-1. **Develop:** Edit your agent logic in `app/agent.py`.
-2. **Test:** Explore your agent functionality using the local playground with `make playground`. The playground automatically reloads your agent on code changes.
-3. **Enhance:** When ready for production, run `uvx agent-starter-pack enhance` to add CI/CD pipelines, Terraform infrastructure, and evaluation notebooks.
-
-The project includes a `GEMINI.md` file that provides context for AI tools like Gemini CLI when asking questions about your template.
-
-
-## Deployment
-
-You can deploy your agent to a Dev Environment using the following command:
-
-```bash
-gcloud config set project <your-dev-project-id>
-make deploy
+pip install opik
+# Set up Opik account (free tier available)
+# Configure OPIK_API_KEY environment variable
 ```
 
+**Best For**:
+- Production deployments
+- Multi-agent systems
+- LLM cost optimization
+- Team collaboration and debugging
+- Compliance and audit trails
 
-When ready for production deployment with CI/CD pipelines and Terraform infrastructure, run `uvx agent-starter-pack enhance` to add these capabilities.
+---
 
-## Monitoring and Observability
+## Feature Comparison
 
-The application provides two levels of observability:
+| Feature | Basic Logging | Opik (Third-Party) |
+|---------|--------------|-------------------|
+| **Setup Complexity** | Minimal | Medium (requires account) |
+| **Dependencies** | None | `opik` package |
+| **Visualization** | Text logs | Interactive web UI |
+| **Token Tracking** | No | Yes (with costs) |
+| **Cross-Session Queries** | Manual (grep) | Built-in search |
+| **Performance Overhead** | Minimal | Low-Medium |
+| **Cost** | Free | Free tier + paid plans |
+| **Best For** | Development | Production |
 
-**1. Agent Telemetry Events (Always Enabled)**
-- OpenTelemetry traces and spans exported to **Cloud Trace**
-- Tracks agent execution, latency, and system metrics
+---
 
-**2. Prompt-Response Logging (Configurable)**
-- GenAI instrumentation captures LLM interactions (tokens, model, timing)
-- Exported to **Google Cloud Storage** (JSONL), **BigQuery** (external tables), and **Cloud Logging** (dedicated bucket)
+## Observability Best Practices
 
-| Environment | Prompt-Response Logging |
-|-------------|-------------------------|
-| **Local Development** (`make playground`) | ❌ Disabled by default |
+### 1. Development vs Production
 
-**To enable locally:** Set `LOGS_BUCKET_NAME` and `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT`.
+**Development (Basic Logging)**:
+- Use Python logging for quick iterations
+- Log level: DEBUG for maximum visibility
+- Console output sufficient
 
-See the [observability guide](https://googlecloudplatform.github.io/agent-starter-pack/guide/observability.html) for detailed instructions, example queries, and visualization options.
+**Production (Third-Party Logging)**:
+- Use structured observability platform (Opik, Langfuse, etc.)
+- Log level: INFO (DEBUG only for troubleshooting)
+- Centralized logging service (GCP Cloud Logging, Datadog, etc.)
+
+### 2. What to Log
+
+**Always Log**:
+- Agent initialization (model, tools, config)
+- Tool invocations (name, args, result, duration)
+- Model calls (prompt summary, token count, latency)
+- Errors and exceptions (with full stack trace)
+- Session IDs for correlation
+
+**Conditionally Log**:
+- Full prompt/response content (privacy/security considerations)
+- User PII (mask or exclude)
+- Sensitive data (passwords, keys - never log)
+
+### 3. Metadata & Tagging
+
+**Useful Tags**:
+- Environment: `development`, `staging`, `production`
+- Agent type: `network-monitoring`, `security-analysis`
+- Model: `gemini-3-flash-preview`, `gemini-2.0-flash`
+- Team: `noc-ops`, `security-team`
+- Customer: `customer-id-123`
+
+**Useful Metadata**:
+- Model parameters: temperature, max_tokens
+- Tool set version: `tools-v2.1.0`
+- Deployment: Cloud Run service name/version
+
+### 4. Alerting & Monitoring
+
+**Key Metrics to Monitor**:
+- Error rate: % of agent runs that fail
+- Latency: p50, p95, p99 response times
+- Token usage: Total tokens/day for cost tracking
+- Tool failures: Which tools fail most often
+- Loop detection: Agent stuck in reasoning loops
+
+**Alert On**:
+- Error rate > 5%
+- Latency p95 > 30 seconds
+- Daily token usage > budget threshold
+- Tool failure rate > 10%
+- Agent loop detected (>10 iterations)
+
+---
+
+## Integration Examples
+
+### Google Cloud Logging
+
+```python
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.setup_logging()
+
+# Now Python logs automatically go to Cloud Logging
+logging.info("Agent initialized")
+```
+
+### Custom Telemetry
+
+```python
+from google.adk.agents.callback_context import CallbackContext
+from typing import Optional
+
+def log_tool_usage(tool: BaseTool, args: Dict, tool_context: ToolContext, 
+                   tool_response: Dict) -> Optional[Dict]:
+    """After-tool callback for custom logging"""
+    duration = calculate_duration()
+    logging.info(f"Tool: {tool.name}, Duration: {duration}ms, Args: {args}")
+    
+    # Send to custom telemetry system
+    send_to_datadog({
+        "metric": "agent.tool.duration",
+        "value": duration,
+        "tags": [f"tool:{tool.name}", "environment:production"]
+    })
+    return None
+
+root_agent = Agent(
+    after_tool_callback=log_tool_usage,
+    ...
+)
+---

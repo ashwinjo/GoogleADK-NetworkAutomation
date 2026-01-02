@@ -1,42 +1,80 @@
-# 8-agent-rag
+# Getting Started with the Google Agent Starter Pack
 
-ADK RAG agent for document retrieval and Q&A. Includes a data pipeline for ingesting and indexing documents into Vertex AI Search or Vector Search.
-Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
+This is a guide to help you get started with the Agent Starter Pack.
 
-## Project Structure
+Docs at : https://github.com/GoogleCloudPlatform/agent-starter-pack
 
-This project is organized as follows:
+[Google ADK Cheatsheet](1-basic-agent/GEMINI.md)
+
+## Pre-requisites
+- uv and uvx
+- Google Cloud SDK
+- make
+- Auth with Google Cloud
+
+Once you have the Google Cloud SDK installed, you need to authenticate with Google Cloud so that once you test agent locally you can eventually deploy it to Cloud.
+
+```bash
+gcloud auth login
+```
+
+```bash
+gcloud config set project <your-project-id>
+```
+
+```bash
+gcloud config set region <your-region>
+```
+
+```bash
+gcloud auth login --update-adc --project <your-project-id>
+```
+
+## Creating Agent
+
+```bash
+uvx agent-starter-pack create <agent-folder-name>
+```
+
+If you already have ADK agent created without Agent Starter Pack
+```bash
+uvx agent-starter-pack enhance <agent folder>
+```
+
+Now, Lets make our agents.
+
+Command Run: ```uvx agent-starter-pack create 1-basic-agent```
 
 ```
-8-agent-rag/
-├── app/                 # Core application code
-│   ├── agent.py         # Main agent logic
-│   ├── fast_api_app.py  # FastAPI Backend server
-│   └── app_utils/       # App utilities and helpers
-├── tests/               # Unit, integration, and load tests
-├── Makefile             # Makefile for common commands
-├── GEMINI.md            # AI-assisted development guide
-└── pyproject.toml       # Project dependencies and configuration
+Interactive Prompts & Selections:
+
+Template: 1. adk_base (A base ReAct agent built with Google's Agent Development Kit).
+
+Deployment Target: 2. Cloud Run (GCP Serverless container execution).
+
+Session Type: 1. In-memory session (Ideal for stateless applications).
+
+CI/CD Runner: 1. Simple (Minimal, no CI/CD or Terraform).
+
+GCP Region: us-central1.
 ```
 
-> 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
 
-## Requirements
-
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
-- **make**: Build automation tool - [Install](https://www.gnu.org/software/make/) (pre-installed on most Unix-based systems)
-
+> **Note:** <br>It will create "app" folder which would be your agent code.
+<br>You can rename it to anything you want.
+<br>
+Ensure you use the same name in your agent.py file when you run
 
 ## Quick Start (Local Testing)
 
 Install required packages and launch the local development environment:
 
+Checkout 
+** No need for venv here
+
 ```bash
 make install && make playground
 ```
-> **📊 Observability Note:** Agent telemetry (Cloud Trace) is always enabled. Prompt-response logging (GCS, BigQuery, Cloud Logging) is **disabled** locally, **enabled by default** in deployed environments (metadata only - no prompts/responses). See [Monitoring and Observability](#monitoring-and-observability) for details.
 
 ## Commands
 
@@ -48,7 +86,6 @@ make install && make playground
 | `make local-backend` | Launch local development server with hot-reload |
 | `make test`          | Run unit and integration tests                                                              |
 | `make lint`          | Run code quality checks (codespell, ruff, mypy)                                             |
-| `make data-ingestion`| Run data ingestion pipeline in the Dev environment                                           |
 
 For full command options and usage, refer to the [Makefile](Makefile).
 
@@ -56,11 +93,11 @@ For full command options and usage, refer to the [Makefile](Makefile).
 ## Usage
 
 This template follows a "bring your own agent" approach - you focus on your business logic, and the template handles everything else (UI, infrastructure, deployment, monitoring).
-1. **Develop:** Edit your agent logic in `app/agent.py`.
+1. **Develop:** Edit your agent logic in `basic-agent/agent.py`.
 2. **Test:** Explore your agent functionality using the local playground with `make playground`. The playground automatically reloads your agent on code changes.
 3. **Enhance:** When ready for production, run `uvx agent-starter-pack enhance` to add CI/CD pipelines, Terraform infrastructure, and evaluation notebooks.
 
-The project includes a `GEMINI.md` file that provides context for AI tools like Gemini CLI when asking questions about your template.
+The project includes a `GEMINI.md` file that provides context for AI tools like Gemini CLI when asking questions about your template. Very usefule when doing vibe coding.
 
 
 ## Deployment

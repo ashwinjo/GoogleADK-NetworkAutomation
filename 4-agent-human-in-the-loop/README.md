@@ -3,6 +3,117 @@
 A base ReAct agent built with Google's Agent Development Kit (ADK)
 Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
 
+---
+
+## Network Use Case
+
+**Configuration Change Approval System** - A safety-first network configuration management system that enforces human approval for risky operations. This implementation demonstrates real-world change control workflows where:
+
+- **Safe Operations Execute Freely**: Read operations (show commands, status checks) proceed without interruption
+- **Risky Operations Require Approval**: Configuration writes pause execution and request human authorization
+- **Policy-Based Gating**: Different routers have different approval requirements based on criticality
+- **Audit Trail**: All approval requests and responses are logged for compliance
+
+**Real-World Scenarios**:
+
+1. **SPOF Protection**: Critical routers (single points of failure) always require approval
+2. **Business Hours Policy**: Configuration changes during peak hours trigger human review
+3. **Change Freeze Windows**: Agent respects maintenance windows and blocks changes automatically
+4. **Multi-Stage Approval**: Different configuration types require different approval levels
+
+This pattern is essential for production network operations where autonomous changes must be balanced with operational safety and compliance requirements.
+
+## ADK Features Demonstrated
+
+This project showcases two distinct Human-in-the-Loop (HITL) implementation patterns:
+
+### 1. Boolean Confirmation Pattern (`agent_hitl_boolean/`)
+
+**Simple, Policy-Based Approval**
+
+- **`require_confirmation` Parameter**: Attach a boolean function to FunctionTool
+- **Policy Functions**: `confirmation_if_not_spof_router(router_name) -> bool`
+  - Returns `True` when human approval is needed
+  - Returns `False` for auto-approved operations
+- **Declarative Gating**: Agent automatically pauses when function returns True
+- **Example Policy**: Router "r1-sea3" is a SPOF → requires approval for writes
+- **Use Case**: Simple yes/no approval gates based on router identity, time, or other context
+
+**Key Code Pattern**:
+```python
+FunctionTool(
+    write_router_config,
+    require_confirmation=confirmation_if_not_spof_router
+)
+```
+
+### 2. Tool-Based Confirmation Wizard (`agent_hitl_tool_use/`)
+
+**Advanced, Custom Approval Workflows**
+
+- **`ToolContext.request_confirmation()`**: Explicitly request human input with custom payloads
+- **`ToolContext.tool_confirmation`**: Access human's approval decision and additional data
+- **Custom Payloads**: Include structured data in approval requests (`ok_to_write`, etc.)
+- **Hint System**: Provide guidance to human reviewers about what they're approving
+- **Conditional Logic**: Different approval paths based on payload content
+- **State Management**: Track approval status (pending, approved, rejected)
+
+**Key Code Pattern**:
+```python
+if not tool_confirmation:
+    tool_context.request_confirmation(
+        hint="This will modify router config",
+        payload={"ok_to_write": False}
+    )
+    return {"status": "pending_approval"}
+
+ok_to_write = tool_confirmation.payload.get("ok_to_write")
+if ok_to_write:
+    return write_router_config(router_name)
+```
+
+### 3. Resumability (Both Implementations)
+
+- **ResumabilityConfig**: `is_resumable=True` enables pause/resume capability
+- **Session Persistence**: Agent state preserved while awaiting human response
+- **Event Loop Management**: Execution suspends at confirmation point
+- **Continuation**: Agent resumes from exact point after approval/rejection
+
+### 4. Safe vs Risky Tool Separation
+
+- **Read Operations**: `read_router_config` never requires approval
+- **Write Operations**: `write_router_config` protected by HITL
+- **Tool Categorization**: Clear separation between observational and mutating operations
+- **Risk-Based Access Control**: Tools annotated with safety requirements
+
+### 5. Low-Temperature Generation
+
+- **Deterministic Behavior**: `temperature=0.1` for consistent, predictable agent actions
+- **Production Safety**: Reduced creativity ensures agent follows exact procedures
+- **Compliance-Friendly**: Reproducible behavior for audit and regulatory requirements
+
+---
+
+## Comparison: When to Use Each Pattern
+
+| Pattern | Best For | Complexity | Flexibility |
+|---------|----------|------------|-------------|
+| **Boolean** | Simple approval gates, policy-based decisions | Low | Low |
+| **Tool-Based** | Custom workflows, multi-field approvals, conditional logic | Medium | High |
+
+**Choose Boolean Pattern** when:
+- Simple yes/no approval is sufficient
+- Decision is based on input parameters only
+- No additional data needed from human reviewer
+
+**Choose Tool-Based Pattern** when:
+- Need custom approval payloads
+- Require reviewer to provide additional information
+- Implementing multi-stage or conditional workflows
+- Building approval wizards with multiple steps
+
+---
+
 ## Project Structure
 
 This project is organized as follows:

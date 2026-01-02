@@ -3,93 +3,48 @@
 A base ReAct agent built with Google's Agent Development Kit (ADK)
 Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
 
-## Project Structure
+---
 
-This project is organized as follows:
+## Network Use Case
 
-```
-1-basic-agent/
-├── app/                 # Core application code
-│   ├── agent.py         # Main agent logic
-│   ├── fast_api_app.py  # FastAPI Backend server
-│   └── app_utils/       # App utilities and helpers
-├── tests/               # Unit, integration, and load tests
-├── Makefile             # Makefile for common commands
-├── GEMINI.md            # AI-assisted development guide
-└── pyproject.toml       # Project dependencies and configuration
-```
+**Network Design Review Agent** - An AI-powered Senior Network Architect that performs comprehensive design reviews of network architectures. The agent analyzes textual descriptions of network designs given by user to identify architectural risks, anti-patterns, and missing considerations. It provides structured feedback covering:
 
-> 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
+- Failure domains and blast radius analysis
+- Redundancy and high availability assessment  
+- Routing and convergence behavior evaluation
+- Security boundaries and traffic isolation review
+- Operational complexity and day-2 operations considerations
+- Scalability and future growth planning
 
-## Requirements
+The agent operates in a **review-only mode** (no direct network access or configuration changes), making it safe for learning and consultation purposes.
 
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
-- **make**: Build automation tool - [Install](https://www.gnu.org/software/make/) (pre-installed on most Unix-based systems)
+## ADK Features Demonstrated
 
+This project showcases multiple ADK capabilities through three different implementations:
 
-## Quick Start (Local Testing)
+### 1. Basic Agent (`basic_agent/`)
 
-Install required packages and launch the local development environment:
+- **Agent & App Setup**: Core ADK classes for agent definition
+- **Model Configuration**: Gemini Flash 3.0 with retry options
+- **System Prompts**: Detailed instruction templates for specialized agent behavior
+- **Vertex AI Integration**: Cloud-based LLM execution
 
-```bash
-make install && make playground
-```
-> **📊 Observability Note:** Agent telemetry (Cloud Trace) is always enabled. Prompt-response logging (GCS, BigQuery, Cloud Logging) is **disabled** locally, **enabled by default** in deployed environments (metadata only - no prompts/responses). See [Monitoring and Observability](#monitoring-and-observability) for details.
+### 2. Advanced Configuration 
+(`basic_agent_advanced_config_and_cotrol/`)
+- **Output Schema**: Pydantic model-based structured outputs (`CommandReadout`)
+- **Generation Controls**: 
+  - Temperature control for deterministic responses
+  - Token limits (`max_output_tokens`)
+  - Safety settings for content filtering
+- **Planning Strategies**:
+  - `PlanReActPlanner`: Multi-step reasoning with planning
+  - `BuiltInPlanner` with thinking config (commented example)
 
-## Commands
+### 3. Programmatic Execution (`no_web_agent_run/`)
 
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `make install`       | Install all required dependencies using uv                                                  |
-| `make playground`    | Launch local development environment with backend and frontend - leveraging `adk web` command.|
-| `make deploy`        | Deploy agent to Cloud Run (use `IAP=true` to enable Identity-Aware Proxy, `PORT=8080` to specify container port) |
-| `make local-backend` | Launch local development server with hot-reload |
-| `make test`          | Run unit and integration tests                                                              |
-| `make lint`          | Run code quality checks (codespell, ruff, mypy)                                             |
+- **Runner API**: Direct agent invocation without web interface
+- **Session Management**: `InMemorySessionService` for stateless operations
+- **Event Streaming**: Real-time access to agent execution events
+- **Headless Operation**: CLI-based agent interaction
 
-For full command options and usage, refer to the [Makefile](Makefile).
-
-
-## Usage
-
-This template follows a "bring your own agent" approach - you focus on your business logic, and the template handles everything else (UI, infrastructure, deployment, monitoring).
-1. **Develop:** Edit your agent logic in `app/agent.py`.
-2. **Test:** Explore your agent functionality using the local playground with `make playground`. The playground automatically reloads your agent on code changes.
-3. **Enhance:** When ready for production, run `uvx agent-starter-pack enhance` to add CI/CD pipelines, Terraform infrastructure, and evaluation notebooks.
-
-The project includes a `GEMINI.md` file that provides context for AI tools like Gemini CLI when asking questions about your template.
-
-
-## Deployment
-
-You can deploy your agent to a Dev Environment using the following command:
-
-```bash
-gcloud config set project <your-dev-project-id>
-make deploy
-```
-
-
-When ready for production deployment with CI/CD pipelines and Terraform infrastructure, run `uvx agent-starter-pack enhance` to add these capabilities.
-
-## Monitoring and Observability
-
-The application provides two levels of observability:
-
-**1. Agent Telemetry Events (Always Enabled)**
-- OpenTelemetry traces and spans exported to **Cloud Trace**
-- Tracks agent execution, latency, and system metrics
-
-**2. Prompt-Response Logging (Configurable)**
-- GenAI instrumentation captures LLM interactions (tokens, model, timing)
-- Exported to **Google Cloud Storage** (JSONL), **BigQuery** (external tables), and **Cloud Logging** (dedicated bucket)
-
-| Environment | Prompt-Response Logging |
-|-------------|-------------------------|
-| **Local Development** (`make playground`) | ❌ Disabled by default |
-
-**To enable locally:** Set `LOGS_BUCKET_NAME` and `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT`.
-
-See the [observability guide](https://googlecloudplatform.github.io/agent-starter-pack/guide/observability.html) for detailed instructions, example queries, and visualization options.
+---

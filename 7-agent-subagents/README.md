@@ -3,93 +3,181 @@
 A base ReAct agent built with Google's Agent Development Kit (ADK)
 Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
 
-## Project Structure
+---
 
-This project is organized as follows:
+## Network Use Case
 
+**Hierarchical Website Troubleshooting System** - An intelligent multi-agent orchestration pattern where a parent "Network Troubleshooting Agent" delegates specialized tasks to expert sub-agents, mimicking how a senior NOC engineer coordinates a team.
+
+### Operational Workflow
+
+**User Report**: "Website https://example.com is slow" or "Website is not responding"
+
+**Orchestration Response**:
+1. **Parent Agent** receives report and initiates hierarchical workflow
+2. **MonitoringAgent** (Sub-Agent 1):
+   - Checks website availability
+   - Measures response time
+   - Detects packet loss
+   - **Reports findings back to parent**
+
+3. **AnalysisAgent** (Sub-Agent 2):
+   - Receives monitoring results from parent
+   - Analyzes network traffic patterns
+   - Examines latency distribution
+   - Identifies bottlenecks (server, network, or routing)
+   - **Reports root cause analysis to parent**
+
+4. **RemediationAgent** (Sub-Agent 3):
+   - Receives analysis from parent
+   - Selects appropriate remediation action:
+     - Restart web server (if server issue detected)
+     - Clear cache (if cache problem identified)
+     - Optimize routing (if latency/routing issue found)
+   - **Reports remediation outcome to parent**
+
+5. **ReportingAgent** (Sub-Agent 4):
+   - Extracts conversation history from all prior agents
+   - Collects monitoring, analysis, and remediation results
+   - Formats comprehensive troubleshooting report
+   - **Presents final summary to user**
+
+### Real-World Value
+
+- **Delegation Pattern**: Parent agent doesn't do the work—it orchestrates specialists
+- **Expertise Separation**: Each sub-agent has specialized tools and knowledge domain
+- **Dynamic Task Assignment**: Parent determines which sub-agent to invoke based on context
+- **Result Aggregation**: ReportingAgent synthesizes entire workflow into actionable summary
+- **Scalability**: Easy to add new specialist agents without changing parent logic
+
+**Difference from Sequential Workflows**: 
+- In sequential workflows, agents run automatically in predetermined order
+- In sub-agent pattern, parent agent dynamically decides which sub-agent to call, when, and with what instructions
+- Sub-agents report back to parent, not directly to next agent
+
+## ADK Features Demonstrated
+
+This project showcases advanced hierarchical multi-agent architecture:
+
+### 1. Parent-Child Agent Hierarchy
+
+**Parent Orchestration Agent**
+
+- **sub_agents Parameter**: Declares available specialist agents
+  ```python
+  network_troubleshooting_agent = Agent(
+      name="NetworkTroubleshootingAgent",
+      sub_agents=[
+          monitoring_agent,
+          analysis_agent,
+          remediation_agent,
+          reporting_agent,
+      ],
+      ...
+  )
+  ```
+- **No Tools Directly**: Parent delegates work rather than executing it
+- **Dynamic Delegation**: Parent decides which sub-agent to invoke based on user request
+- **Context Management**: Parent passes relevant information to each sub-agent
+- **Result Aggregation**: Parent receives outputs from sub-agents and coordinates handoffs
+
+### 2. Specialized Sub-Agent Design
+
+**Four Expert Sub-Agents with Domain-Specific Tools**
+
+**MonitoringAgent**:
+- **Tools**: `check_website_availability`, `check_response_time`, `check_packet_loss`
+- **Responsibility**: Detect symptoms and current state
+- **Output Key**: `monitoring_results` stored in session state
+
+**AnalysisAgent**:
+- **Tools**: `analyze_network_traffic`, `analyze_latency`, `identify_bottlenecks`
+- **Responsibility**: Diagnose root causes from monitoring data
+- **Output Key**: `analysis_results` stored in session state
+
+**RemediationAgent**:
+- **Tools**: `restart_web_server`, `clear_cache`, `optimize_routing`
+- **Responsibility**: Apply corrective actions based on analysis
+- **Output Key**: `remediation_results` stored in session state
+
+**ReportingAgent**:
+- **Tools**: `format_report`
+- **Responsibility**: Synthesize complete workflow into final report
+- **Output Key**: `final_report` stored in session state
+
+### 3. Task Delegation Pattern
+
+**How Parent Orchestrates Sub-Agents**:
+
+1. **Receives User Request**: Parent agent gets initial complaint
+2. **Delegates to MonitoringAgent**: 
+   - Parent: "Check the website status for https://example.com"
+   - MonitoringAgent executes tools and returns results to parent
+3. **Delegates to AnalysisAgent**:
+   - Parent: "Here are the monitoring results, analyze the root cause"
+   - AnalysisAgent receives monitoring data via conversation history
+4. **Delegates to RemediationAgent**:
+   - Parent: "Based on analysis, attempt remediation"
+   - RemediationAgent selects appropriate fix based on identified issue
+5. **Delegates to ReportingAgent**:
+   - Parent: "Generate final report from all findings"
+   - ReportingAgent extracts conversation history and formats summary
+
+### 4. Conversation History Access
+
+**ReportingAgent's Advanced Pattern**:
+
+- **Reads Conversation History**: Accesses outputs from all prior sub-agents
+- **Extracts Output Keys**: Pulls `monitoring_results`, `analysis_results`, `remediation_results` from state
+- **Cross-Agent Data Flow**: Demonstrates how agents communicate through shared session state
+- **Comprehensive Reporting**: Synthesizes multi-agent outputs into unified report
+
+**Key Code Pattern**:
+```python
+instruction="""
+1. Review entire conversation history
+2. Extract monitoring_results from MonitoringAgent's output
+3. Extract analysis_results from AnalysisAgent's output  
+4. Extract remediation_results from RemediationAgent (direct input)
+5. Use format_report tool with all collected data
+"""
 ```
-7-agent-subagents/
-├── app/                 # Core application code
-│   ├── agent.py         # Main agent logic
-│   ├── fast_api_app.py  # FastAPI Backend server
-│   └── app_utils/       # App utilities and helpers
-├── tests/               # Unit, integration, and load tests
-├── Makefile             # Makefile for common commands
-├── GEMINI.md            # AI-assisted development guide
-└── pyproject.toml       # Project dependencies and configuration
-```
 
-> 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
+### 5. Instruction Engineering for Sub-Agents
 
-## Requirements
+**Specialized System Prompts**:
 
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
-- **make**: Build automation tool - [Install](https://www.gnu.org/software/make/) (pre-installed on most Unix-based systems)
+- **MonitoringAgent**: Told to extract website URL from task description
+- **AnalysisAgent**: Instructed to identify actionable root causes for remediation
+- **RemediationAgent**: Given conditional logic (server issues → restart, cache → clear, routing → optimize)
+- **ReportingAgent**: Detailed instructions on extracting conversation history and formatting
 
+### 6. Deterministic Behavior
 
-## Quick Start (Local Testing)
+- **Temperature**: `0.0` across all agents for consistent, repeatable troubleshooting
+- **Retry Options**: `HttpRetryOptions(attempts=3)` for resilience
+- **Structured Outputs**: Agents produce formatted markdown tables and reports
 
-Install required packages and launch the local development environment:
+---
 
-```bash
-make install && make playground
-```
-> **📊 Observability Note:** Agent telemetry (Cloud Trace) is always enabled. Prompt-response logging (GCS, BigQuery, Cloud Logging) is **disabled** locally, **enabled by default** in deployed environments (metadata only - no prompts/responses). See [Monitoring and Observability](#monitoring-and-observability) for details.
+## Architecture Comparison
 
-## Commands
+| Pattern | Control Flow | Best For |
+|---------|--------------|----------|
+| **Sequential** | Linear, predetermined order | Fixed diagnostic procedures |
+| **Parallel** | Concurrent, independent execution | Multi-device comparisons |
+| **Loop** | Iterative, condition-based | Auto-remediation cycles |
+| **Sub-Agent (This)** | Hierarchical, dynamic delegation | Complex workflows requiring orchestration |
 
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `make install`       | Install all required dependencies using uv                                                  |
-| `make playground`    | Launch local development environment with backend and frontend - leveraging `adk web` command.|
-| `make deploy`        | Deploy agent to Cloud Run (use `IAP=true` to enable Identity-Aware Proxy, `PORT=8080` to specify container port) |
-| `make local-backend` | Launch local development server with hot-reload |
-| `make test`          | Run unit and integration tests                                                              |
-| `make lint`          | Run code quality checks (codespell, ruff, mypy)                                             |
+**When to Use Sub-Agent Pattern**:
+- Need dynamic task routing based on user input
+- Different request types require different agent combinations
+- Want centralized orchestration logic
+- Building agent "teams" with specialized expertise
+- Need parent agent to make decisions about workflow progression
 
-For full command options and usage, refer to the [Makefile](Makefile).
+**Key Difference**: 
+- Sequential/Parallel/Loop workflows are **predetermined and automatic**
+- Sub-agent pattern gives parent **dynamic control** over which agents run and when
 
-
-## Usage
-
-This template follows a "bring your own agent" approach - you focus on your business logic, and the template handles everything else (UI, infrastructure, deployment, monitoring).
-1. **Develop:** Edit your agent logic in `app/agent.py`.
-2. **Test:** Explore your agent functionality using the local playground with `make playground`. The playground automatically reloads your agent on code changes.
-3. **Enhance:** When ready for production, run `uvx agent-starter-pack enhance` to add CI/CD pipelines, Terraform infrastructure, and evaluation notebooks.
-
-The project includes a `GEMINI.md` file that provides context for AI tools like Gemini CLI when asking questions about your template.
-
-
-## Deployment
-
-You can deploy your agent to a Dev Environment using the following command:
-
-```bash
-gcloud config set project <your-dev-project-id>
-make deploy
-```
-
-
-When ready for production deployment with CI/CD pipelines and Terraform infrastructure, run `uvx agent-starter-pack enhance` to add these capabilities.
-
-## Monitoring and Observability
-
-The application provides two levels of observability:
-
-**1. Agent Telemetry Events (Always Enabled)**
-- OpenTelemetry traces and spans exported to **Cloud Trace**
-- Tracks agent execution, latency, and system metrics
-
-**2. Prompt-Response Logging (Configurable)**
-- GenAI instrumentation captures LLM interactions (tokens, model, timing)
-- Exported to **Google Cloud Storage** (JSONL), **BigQuery** (external tables), and **Cloud Logging** (dedicated bucket)
-
-| Environment | Prompt-Response Logging |
-|-------------|-------------------------|
-| **Local Development** (`make playground`) | ❌ Disabled by default |
-
-**To enable locally:** Set `LOGS_BUCKET_NAME` and `OTEL_INSTRUMENTATION_GENAI_CAPTURE_MESSAGE_CONTENT=NO_CONTENT`.
-
-See the [observability guide](https://googlecloudplatform.github.io/agent-starter-pack/guide/observability.html) for detailed instructions, example queries, and visualization options.
+---
