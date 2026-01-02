@@ -48,6 +48,32 @@ Refer [AgentStarterPack](AgentStarterPack.md)
 *Full step-by-step instructions and example workflows coming soon!*
 
 ---
+## Nomenclature and Folder Structure:
+```
+```
+    1-basic-agent/ <<<<<<< ADK Agent Parent Folder Name >>>>>>>
+    ├── README.md
+    ├── agent1/ <<<<<<< ADK Agent folder >>>>>>>
+    │   ├── __init__.py
+    │   ├── agent.py <<< Agent Logic File >>>
+    |---other_folders
+    ├── tests/
+    │   └── test_agent.py
+    ├── requirements.txt
+    └── pyproject.toml
+```
+** To run the agent locally:
+
+cd <ADK Agent Parent Folder Name>
+
+```bash
+make install && make playground
+```
+** No need of venv when using uv. uv will take care of the dependencies and versioning.
+
+> Start with this scaffold for any new agent!
+
+
 
 ## Use Cases
 
@@ -62,6 +88,8 @@ Refer [AgentStarterPack](AgentStarterPack.md)
 | `7-agent-subagents/` | Hierarchical Multi-Agent, Sub-Agent Delegation, Parent Orchestration, Dynamic Task Routing | Hierarchical Website Troubleshooting - Parent agent orchestrating specialized sub-agents for complex workflows | [View Details](./7-agent-subagents/) |
 | `9-agent-a2a-asp/` | RemoteA2aAgent, Agent Cards, HTTP Communication, Microservices Architecture | Distributed Network Operations Center - Agent-to-agent communication via HTTP for microservices-style architecture | [View Details](./9-agent-a2a-asp/) |
 | `10-agent-observability/` | Python Logging, Opik Integration, Trace Visualization, LLM Metrics Tracking | Production Observability & Monitoring - Comprehensive logging and observability patterns for production deployments | [View Details](./10-agent-observability/) |
+| `11-agent-deployment-cloudrun/` | Cloud Run Deployment, Cloud Build, IAM Policy Binding, Dockerfile Configuration, Serverless Containers | Cloud Run Deployment - Serverless containerized agent deployment with automatic scaling and IAM-based access control | [View Details](./11-agent-deployment-cloudrun/) |
+| `12-agent-deployment-vtxai/` | Vertex AI Agent Engine, Managed Runtime, State Management, Secure Code Execution, Enterprise Observability | Vertex AI Agent Engine Deployment - Managed enterprise-grade agent runtime with built-in state persistence and playground UI | [View Details](./12-agent-deployment-vtxai/) |
 
 ---
 
