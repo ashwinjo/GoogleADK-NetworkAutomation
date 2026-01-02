@@ -74,7 +74,8 @@ import re
 
 def extract_router_name(text: str) -> Optional[str]:
     """
-    Extracts the router name from a string using a regular expression.
+    Extracts the router name from a string using flexible patterns.
+    Supports various router naming conventions commonly used in networks.
 
     Args:
         text: The input string containing the router name.
@@ -82,12 +83,22 @@ def extract_router_name(text: str) -> Optional[str]:
     Returns:
         The router name as a string, or None if no match is found.
     """
-    pattern = r"(r\d+-[a-zA-Z]+\d+)"
-    match = re.search(pattern, text)
+    # More flexible patterns for router names
+    patterns = [
+        r"\b(r\d+-[a-zA-Z]+\d+)\b",  # r1-core01, r2-edge05
+        r"\b(router\d+)\b",           # router1, router01
+        r"\b([a-zA-Z]+-router\d+)\b", # core-router1, edge-router2
+        r"\b(R\d+)\b",                # R1, R2 (Cisco style)
+        r"\b([a-zA-Z]{2,4}\d+)\b",    # cor01, edg05 (abbreviated)
+    ]
 
-    if match:
-        router_name = match.group(1)
-        return router_name
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            router_name = match.group(1)
+            return router_name
+
+    return None
     
 def check_router_status(router_name: str) -> bool:
     """
@@ -149,7 +160,8 @@ def check_if_router_is_up_and_agent_should_run(callback_context: CallbackContext
         
 # --- 1. Define the Callback Function ---
 def check_if_router_is_up_and_agent_should_process_the_repsonse(callback_context: CallbackContext) -> Optional[types.Content]:
-    """This function will check if the router is up and if the agent should run.
+    """This function will check if the router is up and if the agent should process the response.
+    When Agent is Down, we will not read the configuration and return a message to the user.
     """
     current_state = callback_context.state.to_dict()
     
@@ -184,7 +196,9 @@ def check_if_router_is_up_and_agent_should_process_the_repsonse(callback_context
     else:
         callback_context.state['after_agent_callback_latest_user_message'] = last_message
         return types.Content(
-            parts=[types.Part(text=f"It is now safe to push the response to the router {callback_context.state['before_agent_callback_latest_router_name']}.")],
+            parts=[types.Part(text=f""" I have read the configuration for 
+                              the router {callback_context.state['before_agent_callback_latest_router_name']} 
+                              and it is healthy. This is a post agent run step""")],
             role="model" # Assign model role to the overriding response
         )
     
@@ -195,8 +209,26 @@ root_agent = Agent(
         model="gemini-3-flash-preview",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
-    instruction="""You are a helpful Network AI assistant designed to provide 
-    accurate and useful router configurations.""",
+    instruction="""You are a secure Network Operations AI assistant specialized in router configuration management.
+
+    CORE RESPONSIBILITIES:
+    - Safely retrieve and analyze router configurations
+    - Provide configuration recommendations and analysis
+    - Ensure operational safety through automated health checks
+
+    SAFETY PROTOCOLS:
+    - All operations require router health verification before proceeding
+    - Unhealthy routers are automatically blocked from configuration operations
+    - Configuration changes are validated for safety and correctness
+    - All actions include audit trails and safety confirmations
+
+    AVAILABLE OPERATIONS:
+    - Read and analyze existing router configurations
+    - Provide configuration recommendations
+    - Validate configuration syntax and best practices
+    - Generate configuration documentation
+
+    IMPORTANT: This agent includes built-in guardrails that prevent operations on unhealthy infrastructure. If a router is detected as down or unreachable, operations will be safely blocked with appropriate notifications.""",
     tools=[read_router_config],
     before_agent_callback=check_if_router_is_up_and_agent_should_run,
     after_agent_callback=check_if_router_is_up_and_agent_should_process_the_repsonse,

@@ -45,12 +45,13 @@ logging.basicConfig(
 
 
 # --- Define Before Tool Callback ---
-def before_tool_callback(tool: BaseTool,
+def before_tool_callback_blocked_router_access(tool: BaseTool,
                          args: Dict[str, Any], 
                          tool_context: ToolContext
     ) -> Optional[Dict]:
-    """Simple callback that modifies tool arguments or skips the tool call.
-    Main use would be argument validation to the funtion"""
+    """This function will check if the tool is being called and if it should be blocked.
+    When a specific router is being called(r1-gov51), we will block the call and return a message to the user.
+    """
     tool_name = tool.name
     print(f"[Callback] Before tool call for '{tool_name}'")
     print(f"[Callback] Original args: {args}")   
@@ -67,12 +68,12 @@ def before_tool_callback(tool: BaseTool,
     return None
 
 # --- Define After Tool Callback ---
-def after_tool_callback(tool: BaseTool, 
+def after_tool_callback_content_security_validation(tool: BaseTool, 
                         args: Dict[str, Any], 
                         tool_context: ToolContext, 
                         tool_response: Dict) -> Optional[Dict]:
     """
-    Simple callback that modifies the tool response after execution.
+    Simple callback that validates Content Security Validation
     """
     tool_name = tool.name
     print(f"[Callback] After tool call for '{tool_name}'")
@@ -122,8 +123,8 @@ root_agent = Agent(
     ),
     instruction="You are a helpful Network AI assistant designed to provide accurate and useful router configurations.",
     tools=[read_router_config],
-    before_tool_callback=before_tool_callback,
-    after_tool_callback=after_tool_callback,
+    before_tool_callback=before_tool_callback_blocked_router_access,
+    after_tool_callback=after_tool_callback_content_security_validation,
 )
 
 app = App(root_agent=root_agent, name="before_after_tool_callback")

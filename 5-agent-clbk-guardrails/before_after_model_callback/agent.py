@@ -51,7 +51,8 @@ def is_there_password_in_user_request(message: str) -> bool:
     Returns:
         bool: True if the user request contains a password in plaintext, False otherwise.
     """
-    if "PassWord" in message:
+    # You can redirect this to any system. You can also use LLM calbacks to make a decision is something is sensitive.
+    if "password" in message.lower():
         return True
     return False
 
@@ -70,19 +71,18 @@ def is_there_password_in_user_response(message: str) -> bool:
 
 def check_sensitive_content_model_request(callback_context: CallbackContext,
                                           llm_request: LlmRequest) -> Optional[types.Content]:
-    # Get the state and agent name
+    """ This function will check if the user request contains a password in plaintext.
+    If it does, it will return a response to skip the model call.
+    """
     state = callback_context.state
-    agent_name = callback_context.agent_name
-
+    
     # Extract the last user message
     last_user_message = ""
-    print(f"LLM Request: {llm_request.contents}")
-    if llm_request.contents:
-        for content in reversed(llm_request.contents):
-            if content.role == "user" and content.parts and len(content.parts) > 0:
-                if hasattr(content.parts[0], "text") and content.parts[0].text:
-                    last_user_message = content.parts[0].text
-                    break
+    for content in reversed(llm_request.contents):
+        if content.role == "user" and content.parts and len(content.parts) > 0:
+            if hasattr(content.parts[0], "text") and content.parts[0].text:
+                last_user_message = content.parts[0].text
+                break
     
     if is_there_password_in_user_request(last_user_message):
         # Return a response to skip the model call
@@ -107,11 +107,11 @@ def check_sensitive_content_model_request(callback_context: CallbackContext,
 
 def check_sensitive_content_model_response(callback_context: CallbackContext, 
                                            llm_response: LlmResponse) -> Optional[types.Content]:
+    """This function will check if the user response contains a password in plaintext.
+    If it does, it will return a response to skip the model call.
+    """
     state = callback_context.state
-    agent_name = callback_context.agent_name
-
-    # Extract the last user message
-    last_user_message = ""
+  
     # Extract text from the response
     response_text = ""
     for part in llm_response.content.parts:
@@ -120,7 +120,7 @@ def check_sensitive_content_model_response(callback_context: CallbackContext,
     
     if is_there_password_in_user_response(response_text):
         # Return a response to skip the model call
-        state["password_found_in_request"] = True
+        state["password_found_in_response"] = True
         
         return LlmResponse(
             content=types.Content(
@@ -136,7 +136,7 @@ def check_sensitive_content_model_response(callback_context: CallbackContext,
         )
     else:
          # Return None to use the original response
-        state["password_found_in_request"] = False
+        state["password_found_in_response"] = True
         return None
 
 
@@ -153,4 +153,3 @@ root_agent = Agent(
 )
 
 app = App(root_agent=root_agent, name="before_after_model_callback")
-
