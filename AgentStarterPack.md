@@ -7,11 +7,12 @@ Docs at : https://github.com/GoogleCloudPlatform/agent-starter-pack
 [Google ADK Cheatsheet](1-basic-agent/GEMINI.md)
 
 ## Pre-requisites
-- uv and uvx
-- Google Cloud SDK
-- make
-- Auth with Google Cloud
+- uv and uvx [Install](https://docs.astral.sh/uv/getting-started/installation/)
+- Google Cloud SDK [Install](https://docs.cloud.google.com/sdk/docs/install-sdk#deb)
+- make [Install](https://www.gnu.org/software/make/)
 
+
+## Auth with Google Cloud 
 Once you have the Google Cloud SDK installed, you need to authenticate with Google Cloud so that once you test agent locally you can eventually deploy it to Cloud.
 
 ```bash

@@ -4,6 +4,9 @@ Agent-to-Agent (A2A) Communication using Google's Agent Development Kit (ADK) an
 
 ```uvx agent-starter-pack create -p -a adk_a2a_base```
 
+Please ensure you have your Goggle Gemini API key set in your environment variables.
+export GOOGLE_API_KEY=<your-Google-Gemini-API-key>
+
 ---
 
 ## Network Use Case
