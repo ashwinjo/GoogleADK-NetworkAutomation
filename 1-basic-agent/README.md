@@ -32,16 +32,48 @@ This project showcases multiple ADK capabilities through three different impleme
 - **System Prompts**: Detailed instruction templates for specialized agent behavior
 - **Vertex AI Integration**: Cloud-based LLM execution
 
-### 2. Advanced Configuration 
+### 2. Advanced Configuration & Safety Settings
 (`basic_agent_advanced_config_and_cotrol/`)
-- **Output Schema**: Pydantic model-based structured outputs (`CommandReadout`)
-- **Generation Controls**: 
-  - Temperature control for deterministic responses
-  - Token limits (`max_output_tokens`)
-  - Safety settings for content filtering
-- **Planning Strategies**:
-  - `PlanReActPlanner`: Multi-step reasoning with planning
-  - `BuiltInPlanner` with thinking config (commented example)
+
+**Demonstrates how to use ADK's built-in safety settings to block harmful user intent** at the model level before any response is generated.
+
+**Key Concept:** Gemini models have configurable safety filters that screen user inputs for harmful intent. ADK exposes these via `types.SafetySetting` in `generate_content_config`.
+
+**ADK Features Demonstrated:**
+
+- **Safety Settings** (`types.SafetySetting`):
+  Configure harm category thresholds to block dangerous requests
+
+  ```python
+  safety_settings=[
+      types.SafetySetting(
+          category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+      ),
+      types.SafetySetting(
+          category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+          threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+      ),
+  ]
+  ```
+
+- **Available Harm Categories:**
+  | Category | Blocks |
+  |----------|--------|
+  | `HARM_CATEGORY_DANGEROUS_CONTENT` | Instructions for harmful activities |
+  | `HARM_CATEGORY_HARASSMENT` | Malicious or abusive content |
+  | `HARM_CATEGORY_HATE_SPEECH` | Discriminatory content |
+  | `HARM_CATEGORY_SEXUALLY_EXPLICIT` | Adult content |
+
+- **Threshold Levels** (strictness):
+  - `BLOCK_LOW_AND_ABOVE` — Most strict, blocks even low-probability harm
+  - `BLOCK_MEDIUM_AND_ABOVE` — Balanced filtering
+  - `BLOCK_HIGH_AND_ABOVE` — Only blocks high-confidence harmful content
+  - `BLOCK_NONE` — No filtering (use with caution)
+
+- **Output Schema**: Pydantic model (`CommandReadout`) for structured responses
+- **Generation Controls**: Temperature (0.1), token limits
+- **Planning**: `PlanReActPlanner` for multi-step reasoning
 
 ### 3. Programmatic Execution (`no_web_agent_run/`)
 

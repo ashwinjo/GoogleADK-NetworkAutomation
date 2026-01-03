@@ -1,14 +1,20 @@
 """
 Author: Ashwin Joshi
 
-Title:
+Title: Network Command Screening Agent
 
-Purpose:
+Purpose: Demonstrates how to screen harmful networking commands using ADK safety 
+features. Converts natural language requests to networking commands while blocking
+dangerous or destructive operations.
 
 ADK Feature Uses:
+  - Output Schema (Pydantic): Structured command output
+  - Safety Settings: Content filtering for harmful commands
+  - Generate Content Config: Temperature, token limits
+  - PlanReActPlanner: Multi-step reasoning
 
 Useful links:
-  - Agent Development Kit (ADK) Documentation: 
+  - Agent Development Kit (ADK) Documentation: https://google.github.io/adk-docs/
   
 """
 
@@ -20,6 +26,7 @@ from google.genai import types
 from google.adk.planners import BuiltInPlanner
 from google.adk.planners import PlanReActPlanner
 from pydantic import BaseModel, Field
+from typing import Literal
 
 import logging
 import os
@@ -43,100 +50,30 @@ logging.basicConfig(
 
 SYSTEM_PROMPT = """
 # Role
-You are a Senior Network Architect with deep experience in:
-- Enterprise and cloud networking
-- Failure domain analysis
-- Routing and high availability design
-- Operational scalability and security best practices
-
-You are performing a **design review**, not implementing changes.
-
----
-
-# Objective
-Given a textual description of a network design:
-- Identify architectural risks and anti-patterns
-- Highlight missing or unclear design considerations
-- Ask the right clarifying questions
-- Suggest improvements **without prescribing vendor-specific commands**
-
-You must reason like an experienced reviewer in a design review meeting.
-
----
-
-# Constraints
-- Do NOT assume access to live network state or tools
-- Do NOT invent details not explicitly stated
-- Do NOT propose configuration commands
-- Do NOT claim certainty where information is missing
-- Prefer cautious, conservative recommendations
-
-If information is insufficient, explicitly say so.
-
----
-
-# Input
-You will receive:
-- A free-form network design description written by an engineer
-
-Example:
-
-
-# Review Guidelines
-When reviewing the design, explicitly consider:
-- Failure domains and blast radius
-- Redundancy and high availability
-- Routing and convergence behavior
-- Security boundaries and traffic isolation
-- Operational complexity and day-2 operations
-- Scalability and future growth
-
----
-
-# Output Format
-Respond using the following structured format:
-
-## Design Summary
-Briefly restate the design in your own words.
-
-## Identified Risks
-List concrete risks or anti-patterns.
-For each risk:
-- Explain why it matters
-- Indicate potential impact
-
-## Missing Information
-List critical details required to complete the review.
-
-## Clarifying Questions
-Ask specific, technical questions an architect would raise.
-
-## Suggested Improvements
-Provide high-level design improvements.
-Avoid low-level or vendor-specific instructions.
-
-## Overall Assessment
-Provide a qualitative assessment:
-- Low / Medium / High risk
-- With a short justification
+You are a Network Command Assistant with built-in safety screening.
+Your job is to convert natural language requests into networking commands
+while BLOCKING any harmful, dangerous, or destructive operations.
 
 ---
 
 # Tone
-- Professional and constructive
-- Direct but not alarmist
-- Assume the design was created in good faith
-- Focus on improving robustness, not criticizing
+- Helpful but firm on safety
+- Educational when blocking (explain the risk)
+- Assume good intent, but enforce safety
+- Suggest safer alternatives when possible
 
-# User Questions
-<User Question>
----
+# User Request
 """
 
 
 class CommandReadout(BaseModel):
-    command: str = Field(description="networking command")
-    use: str = Field(description="networking command usage")
+    """Structured output for network command screening results."""
+    command: str = Field(
+        description="The networking command to execute, or 'BLOCKED: [reason]' if harmful"
+    )
+    use: str = Field(
+        description="Explanation of command purpose (if safe) or risk details (if blocked)"
+    )
 
 
 root_agent = Agent(
@@ -145,21 +82,27 @@ root_agent = Agent(
         model="gemini-3-flash-preview",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
-    description="Network Design Review Agent",
+    description="Network Command Screening Agent - Converts requests to commands while blocking harmful operations",
     instruction=SYSTEM_PROMPT,
     output_schema=CommandReadout,
     generate_content_config=types.GenerateContentConfig(
-        temperature=0.2, # More deterministic output
-        max_output_tokens=1000,
+        temperature=0.1,  # Very deterministic for consistent safety screening
+        max_output_tokens=5000,  # Commands don't need long responses
         safety_settings=[
+            # Block dangerous content at lowest threshold for maximum safety
             types.SafetySetting(
                 category=types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
                 threshold=types.HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-            )
+            ),
+            # Also screen for potentially harmful instructions
+            types.SafetySetting(
+                category=types.HarmCategory.HARM_CATEGORY_HARASSMENT,
+                threshold=types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+            ),
         ]
     ),
-    # Enable "Reasoning" with "PlanReActPlanner"
-    planner = PlanReActPlanner(),   
+    # Enable "Reasoning" with "PlanReActPlanner" for multi-step safety analysis
+    planner=PlanReActPlanner(),   
 )
 
 """
