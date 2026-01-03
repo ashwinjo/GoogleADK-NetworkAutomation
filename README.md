@@ -59,6 +59,8 @@ Before you begin, ensure you have:
 
 ### ⚡ Quick Start
 
+0. **📚 Find sample queries** for every agent in the [SAMPLE_QUERIES.md](./SAMPLE_QUERIES.md) file.
+
 1. **📥 Clone the repository**
    ```bash
    git clone https://github.com/yourusername/GoogleADK-NetworkAutomation.git
@@ -70,13 +72,13 @@ Before you begin, ensure you have:
    cd 1-basic-agent
    make install && make playground
    ```
-   
+
+
    The playground will launch a web interface where you can interact with the agent.
 
 3. **🔍 Explore the code**
    - 📖 Review `README.md` in each example for use case details
    - 💻 Examine `agent.py` files to understand agent implementation
-   - 🧪 Run tests with `make test` to validate functionality
 
 ### 🎨 Agent Starter Pack (Optional)
 

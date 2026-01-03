@@ -10,15 +10,14 @@ export GOOGLE_API_KEY=<your-Google-Gemini-API-key>
 
 ## Network Use Case
 
-**BGP Troubleshooting Assistant** - An intelligent agent system that diagnoses BGP session issues using structured troubleshooting workflows. The agent follows a systematic React pattern to:
+**Network Troubleshooting & Diagnostics Toolkit** - A collection of agents demonstrating different tool integration patterns for network operations:
 
-- Assess BGP neighbor health by analyzing session states
-- Identify misbehaving or unhealthy peers through multiple diagnostic checks
-- Investigate interface status for connectivity issues
-- Analyze routing information and prefix mismatches
-- Provide actionable, evidence-based recommendations
+- **BGP Troubleshooting** (`agent_custom_tools/`) - Diagnose BGP session issues with custom diagnostic functions
+- **Parallel Network Diagnostics** (`parallel_functions_calls/`) - Run device health, latency, and utilization checks simultaneously
+- **Subnet Calculations** (`agent_mcp_tools_calls/`) - Calculate subnets via external MCP tool servers
+- **Knowledge-Based Assistance** (`agent_builtin_tools/`) - Use Google Search for RFC and documentation lookups
 
-The implementation demonstrates various tool integration patterns - from custom network diagnostic functions to built-in Google Search for knowledge-based assistance, showcasing how agents reason through network problems using observable data rather than assumptions.
+The implementations showcase how agents reason through network problems using observable data, parallel execution for performance, and external tool integrations via MCP.
 
 ## ADK Features Demonstrated
 
@@ -41,11 +40,23 @@ This project showcases comprehensive tool integration capabilities through six d
 
 ### 3. Parallel Function Calls (`parallel_functions_calls/`)
 
-- **Async Tool Execution**: Multiple tools executing simultaneously for performance
-- **Thread Safety**: Safe concurrent execution with `ToolContext` state management
-- **Performance Optimization**: Reduced latency through parallel data gathering
-- **Multiple Data Sources**: Weather, currency, distance, and population tools demonstrating scalability
-- **Context State Management**: Tracking concurrent requests safely across parallel executions
+**Network Diagnostics Agent** - Demonstrates parallel execution of network observability tools for faster troubleshooting.
+
+- **Async Tool Execution**: Multiple network tools run simultaneously
+- **ToolContext State Management**: Shared state tracking across parallel executions
+- **Simulated Network Operations**: Realistic async delays mimicking I/O-bound operations
+
+**Tools Included:**
+| Tool | Purpose | Simulated Delay |
+|------|---------|-----------------|
+| `get_device_health` | CPU, memory, status for routers/firewalls | 2s |
+| `get_link_utilization` | Bandwidth usage between sites | 1.5s |
+| `measure_latency` | RTT between datacenter/branch locations | 1s |
+
+**Example Query:**
+> "Check the health of router1 and router2, measure latency between dc1 and dc2, and check link utilization"
+
+The agent runs all tools in parallel, reducing total wait time from ~4.5s (sequential) to ~2s (parallel).
 
 ### 4. Agent as Tool (`agent_as_tool/`)
 
@@ -63,9 +74,44 @@ This project showcases comprehensive tool integration capabilities through six d
 - **External Service Integration**: Production-ready cloud tool usage
 - **Project-Based Configuration**: Cloud project ID management for service calls
 
-### 6. MCP Tools (Work in Progress) (`agent_mcp_tools_calls/`)
+### 6. MCP Tools (`agent_mcp_tools_calls/`)
 
-- **Placeholder Implementation**: Framework for custom MCP server integration
-- **Network Tool Expansion**: Future integration point for network device APIs
+**MCP (Model Context Protocol) Integration** - Demonstrates connecting to external MCP tool servers using different transport methods.
+
+**Two MCP Toolsets Included:**
+
+| Toolset | Transport | Description |
+|---------|-----------|-------------|
+| **Subnet Calculator** | `StdioConnectionParams` | Uses `npx supergateway` to connect to SSE-based MCP server |
+| **Hugging Face** | `StreamableHTTPServerParams` | Direct HTTP connection with Bearer token auth |
+
+**Connection Methods:**
+
+```python
+# Method 1: Stdio via supergateway (for SSE servers)
+mcp_subnet_calculator_toolset = McpToolset(
+    connection_params=StdioConnectionParams(
+        server_params=StdioServerParameters(
+            command="npx",
+            args=["-y", "supergateway", "--sse", "https://mcp-subnet-calculator.mteke.com/sse"]
+        ),
+        timeout=30,
+    ),
+)
+
+# Method 2: Direct HTTP with auth headers
+hugging_face_toolset = McpToolset(
+    connection_params=StreamableHTTPServerParams(
+        url="https://huggingface.co/mcp",
+        headers={"Authorization": f"Bearer {HUGGING_FACE_TOKEN}"},
+    ),
+)
+```
+
+**Environment Variables Required:**
+- `HUGGING_FACE_TOKEN` - For Hugging Face MCP access (get from huggingface.co/settings/tokens)
+
+**Switching Agents:**
+Uncomment the desired `app = App(...)` line at the bottom of `agent.py` to switch between subnet calculator and Hugging Face agents.
 
 ---
