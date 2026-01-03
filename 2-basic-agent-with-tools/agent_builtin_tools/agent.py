@@ -1,15 +1,7 @@
 """
 Author: Ashwin Joshi
 
-Title:
-
-Purpose:
-
-ADK Feature Uses:
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: 
-  
+Title: Google Search-Based BGP Troubleshooting Assistant
 """
 
 from google.adk.agents import Agent

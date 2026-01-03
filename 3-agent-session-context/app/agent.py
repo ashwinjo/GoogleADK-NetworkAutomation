@@ -1,23 +1,7 @@
 """
 Author: Ashwin Joshi
 
-Title:
-Google ADK Sessions for Network Engineers – BGP Troubleshooting Example
-
-Purpose:
-Demonstrate how ADK Sessions and State enable multi-turn,
-context-aware network troubleshooting conversations.
-
-ADK Feature Uses:
-- Session
-- State
-- ToolContext
-- ReadonlyContext
-- FunctionTool
-
-Useful Links:
-- Agent Development Kit (ADK) Documentation:
-  https://cloud.google.com/vertex-ai/docs/agent-development-kit
+Title: Multi-Turn BGP Troubleshooting with Session Context
 """
 
 import os

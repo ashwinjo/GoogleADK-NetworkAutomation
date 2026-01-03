@@ -1,3 +1,9 @@
+"""
+Author: Ashwin Joshi
+
+Title: Human-in-the-Loop Configuration Approval (Tool-Based)
+"""
+
 # agent/write_with_confirmation.py
 
 from google.adk.tools.tool_context import ToolContext

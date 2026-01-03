@@ -16,15 +16,7 @@
 """
 Author: Ashwin Joshi
 
-Title:
-
-Purpose:
-
-ADK Feature Uses:
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: 
-  
+Title: Third-Party Logging Agent (Opik)
 """
 
 import datetime

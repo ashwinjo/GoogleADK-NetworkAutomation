@@ -15,15 +15,7 @@
 """
 Author: Ashwin Joshi
 
-Title:
-
-Purpose:
-
-ADK Feature Uses:
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: 
-  
+Title: Google Maps Integration Agent
 """
 
 import os

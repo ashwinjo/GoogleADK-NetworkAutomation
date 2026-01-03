@@ -1,15 +1,7 @@
 """
 Author: Ashwin Joshi
 
-Title:
-
-Purpose:
-
-ADK Feature Uses:
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: 
-  
+Title: Agent-as-Tool Network Troubleshooting
 """
 
 import datetime

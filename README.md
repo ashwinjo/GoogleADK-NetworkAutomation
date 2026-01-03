@@ -57,6 +57,25 @@ Before you begin, ensure you have:
 - 🔨 **[make](https://www.gnu.org/software/make/)** - Build automation (pre-installed on most Unix systems)
 - 🔑 **Google Gemini API Key** - Set as environment variable: `export GOOGLE_API_KEY=<your-key>`
 
+## Auth with Google Cloud 
+Once you have the Google Cloud SDK installed, you need to authenticate with Google Cloud so that once you test agent locally you can eventually deploy it to Cloud.
+
+```bash
+gcloud auth login
+```
+
+```bash
+gcloud config set project <your-project-id>
+```
+
+```bash
+gcloud config set region <your-region>
+```
+
+```bash
+gcloud auth login --update-adc --project <your-project-id>
+```
+
 ### ⚡ Quick Start
 
 0. **📚 Find sample queries** for every agent in the [SAMPLE_QUERIES.md](./SAMPLE_QUERIES.md) file.
@@ -80,7 +99,7 @@ Before you begin, ensure you have:
    - 📖 Review `README.md` in each example for use case details
    - 💻 Examine `agent.py` files to understand agent implementation
 
-### 🎨 Agent Starter Pack (Optional)
+### 🎨 Agent Starter Pack (All the folders have been created with the Agent Starter Pack)
 
 For scaffolding new agents, use Google Cloud's **[agent-starter-pack](https://github.com/GoogleCloudPlatform/agent-starter-pack)**—an open-source CLI that handles infrastructure setup, CI/CD, and observability.
 
@@ -103,16 +122,16 @@ Each example follows a consistent structure for easy navigation:
 ├── README.md                     # 📄 Use case documentation and setup
 ├── basic_agent/                  # 🤖 Agent implementation folder
 │   ├── __init__.py
-│   ├── agent.py                  # 🧠 Core agent logic
-│   ├── fast_api_app.py          # 🌐 Web interface (optional)
-│   └── app_utils/               # 🔧 Utilities and helpers
+│   ├── agent.py                  # 🧠 Core agent logic [Main Agent]
+│   ├── fast_api_app.py           # 🌐 Web interface (optional)
+│   └── app_utils/                # 🔧 Utilities and helpers [Tools]
 ├── tests/                        # 🧪 Unit and integration tests
 │   ├── unit/
 │   └── integration/
-├── pyproject.toml               # 📦 Project dependencies (uv)
-├── uv.lock                      # 🔒 Locked dependencies
-├── Makefile                     # ⚙️ Common tasks (install, test, deploy)
-└── Dockerfile                   # 🐳 Container configuration
+├── pyproject.toml               # 📦 Project dependencies (uv) [Dependencies]
+├── uv.lock                      # 🔒 Locked dependencies [Dependencies]
+├── Makefile                     # ⚙️ Common tasks (install, test, deploy) [Makefile]
+└── Dockerfile                   # 🐳 Container configuration [Dockerfile]
 ```
 
 ### 🎮 Running Examples Locally

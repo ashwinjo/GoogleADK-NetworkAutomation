@@ -2,16 +2,6 @@
 Author: Ashwin Joshi
 
 Title: MCP Tools Integration Agent
-
-Purpose: Demonstrates how to use MCP (Model Context Protocol) tools with ADK
-
-ADK Feature Uses:
-  - McpToolset: Integration with external MCP tool servers
-  - StdioConnectionParams: Configure MCP server connections
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: https://google.github.io/adk-docs/
-  
 """
 
 import os

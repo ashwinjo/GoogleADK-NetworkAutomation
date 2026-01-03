@@ -1,15 +1,7 @@
 """
 Author: Ashwin Joshi
 
-Title:
-
-Purpose:
-
-ADK Feature Uses:
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: 
-  
+Title: Parallel CPU Utilization Diagnostics Workflow
 """
 
 from google.adk.agents import Agent

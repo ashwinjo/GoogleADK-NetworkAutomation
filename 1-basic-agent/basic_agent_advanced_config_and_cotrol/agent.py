@@ -2,20 +2,6 @@
 Author: Ashwin Joshi
 
 Title: Network Command Screening Agent
-
-Purpose: Demonstrates how to screen harmful networking commands using ADK safety 
-features. Converts natural language requests to networking commands while blocking
-dangerous or destructive operations.
-
-ADK Feature Uses:
-  - Output Schema (Pydantic): Structured command output
-  - Safety Settings: Content filtering for harmful commands
-  - Generate Content Config: Temperature, token limits
-  - PlanReActPlanner: Multi-step reasoning
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: https://google.github.io/adk-docs/
-  
 """
 
 

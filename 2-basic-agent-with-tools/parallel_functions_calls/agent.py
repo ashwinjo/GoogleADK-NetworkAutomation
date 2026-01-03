@@ -2,19 +2,6 @@
 Author: Ashwin Joshi
 
 Title: Parallel Network Diagnostics Agent
-
-Purpose:
-Demonstrate parallel execution of network observability and diagnostics
-functions using Google ADK, simulating real-world network troubleshooting.
-
-ADK Feature Uses:
-- Parallel tool calling
-- Shared ToolContext state
-- Async I/O-bound network operations
-- Agent-driven orchestration
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation
 """
 
 import asyncio

@@ -3,15 +3,7 @@
 """
 Author: Ashwin Joshi
 
-Title:
-
-Purpose:
-
-ADK Feature Uses:
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: 
-  
+Title: Sequential Network Troubleshooting Workflow
 """
 from google.adk.agents import Agent
 from google.adk.apps.app import App

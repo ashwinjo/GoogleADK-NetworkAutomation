@@ -1,15 +1,7 @@
 """
 Author: Ashwin Joshi
 
-Title:
-
-Purpose:
-
-ADK Feature Uses:
-
-Useful links:
-  - Agent Development Kit (ADK) Documentation: 
-  
+Title: Loop-Based Network Monitoring and Auto-Remediation
 """
 
 from google.adk.tools.tool_context import ToolContext
