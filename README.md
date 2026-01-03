@@ -125,21 +125,69 @@ make install && make playground
 
 
 
-## 🎯 Use Cases
+## 🎯 Learning Path & Use Cases
+
+Follow this structured learning path to master Google ADK for network automation:
+
+---
+
+### 📘 Phase 1: The Foundations
+
+Start here to understand the core concepts of AI agents.
 
 | Path | ADK Feature | Networking Use Case | Link |
 |------|-------------|---------------------|------|
-| `1-basic-agent/` | Agent Setup, Model Config, Output Schema, Planners, Session Management | Network Design Review Agent - AI-powered architectural review for network designs | [View Details](./1-basic-agent/) |
-| `2-basic-agent-with-tools/` | Custom Tools, Built-in Tools, Parallel Execution, Agent-as-Tool, MCP Integration | BGP Troubleshooting Assistant - Systematic diagnosis of BGP session issues using multiple tool patterns | [View Details](./2-basic-agent-with-tools/) |
-| `3-agent-session-context/` | Session State, ToolContext, ReadonlyContext, FunctionTool, Multi-Turn Conversations | Multi-Turn NOC Assistant - Context-aware troubleshooting with state persistence across conversation turns | [View Details](./3-agent-session-context/) |
-| `4-agent-human-in-the-loop/` | HITL Confirmation, ResumabilityConfig, Boolean & Tool-Based Approval Patterns | Configuration Change Approval System - Safety-first network config management with human approval gates | [View Details](./4-agent-human-in-the-loop/) |
-| `5-agent-callbacks-guardrails/` | Agent/Model/Tool Callbacks, CallbackContext, Content Filtering, Access Control | Production Security & Control System - Callback-based guardrails for policy enforcement and data protection | [View Details](./5-agent-callbacks-guardrails/) |
-| `6-agent-workflows/` | SequentialAgent, ParallelAgent, LoopAgent, Nested Workflows, Exit Control | Automated Network Troubleshooting Workflows - Three orchestration patterns (parallel, sequential, loop) for network ops | [View Details](./6-agent-workflows/) |
-| `7-agent-subagents/` | Hierarchical Multi-Agent, Sub-Agent Delegation, Parent Orchestration, Dynamic Task Routing | Hierarchical Website Troubleshooting - Parent agent orchestrating specialized sub-agents for complex workflows | [View Details](./7-agent-subagents/) |
-| `9-agent-a2a-asp/` | RemoteA2aAgent, Agent Cards, HTTP Communication, Microservices Architecture | Distributed Network Operations Center - Agent-to-agent communication via HTTP for microservices-style architecture | [View Details](./9-agent-a2a-asp/) |
-| `10-agent-observability/` | Python Logging, Opik Integration, Trace Visualization, LLM Metrics Tracking | Production Observability & Monitoring - Comprehensive logging and observability patterns for production deployments | [View Details](./10-agent-observability/) |
-| `11-agent-deployment-cloudrun/` | Cloud Run Deployment, Cloud Build, IAM Policy Binding, Dockerfile Configuration, Serverless Containers | Cloud Run Deployment - Serverless containerized agent deployment with automatic scaling and IAM-based access control | [View Details](./11-agent-deployment-cloudrun/) |
-| `12-agent-deployment-vtxai/` | Vertex AI Agent Engine, Managed Runtime, State Management, Secure Code Execution, Enterprise Observability | Vertex AI Agent Engine Deployment - Managed enterprise-grade agent runtime with built-in state persistence and playground UI | [View Details](./12-agent-deployment-vtxai/) |
+| `1-basic-agent/` | Agent Setup, Model Config, Output Schema, Planners, Session Management | **Network Design Review Agent** - AI-powered architectural review for network designs | [View Details](./1-basic-agent/) |
+| `2-basic-agent-with-tools/` | Custom Tools, Built-in Tools, Parallel Execution, Agent-as-Tool, MCP Integration | **BGP Troubleshooting Assistant** - Systematic diagnosis of BGP session issues using multiple tool patterns | [View Details](./2-basic-agent-with-tools/) |
+| `3-agent-session-context/` | Session State, ToolContext, ReadonlyContext, FunctionTool, Multi-Turn Conversations | **Multi-Turn NOC Assistant** - Context-aware troubleshooting with state persistence across conversation turns | [View Details](./3-agent-session-context/) |
+
+---
+
+### 🛡️ Phase 2: Professional Engineering & Governance
+
+Critical for production-ready network AI operations.
+
+| Path | ADK Feature | Networking Use Case | Link |
+|------|-------------|---------------------|------|
+| `5-agent-callbacks-guardrails/` | Agent/Model/Tool Callbacks, CallbackContext, Content Filtering, Access Control | **Production Security & Control** - Callback-based guardrails for policy enforcement (e.g., prevent invalid BGP commands) | [View Details](./5-agent-callbacks-guardrails/) |
+| `4-agent-human-in-the-loop/` | HITL Confirmation, ResumabilityConfig, Boolean & Tool-Based Approval Patterns | **Configuration Change Approval** - Safety-first network config with human approval gates for high-stakes changes | [View Details](./4-agent-human-in-the-loop/) |
+| `10-agent-observability/` | Python Logging, Opik Integration, Trace Visualization, LLM Metrics Tracking | **Production Observability** - Comprehensive logging and tracing—the "audit trail" for network changes | [View Details](./10-agent-observability/) |
+
+---
+
+### 🏗️ Phase 3: Advanced Architectures
+
+Move from single tasks to complex, modular agent systems.
+
+| Path | ADK Feature | Networking Use Case | Link |
+|------|-------------|---------------------|------|
+| `6-agent-workflows/` | SequentialAgent, ParallelAgent, LoopAgent, Nested Workflows, Exit Control | **Automated Network Troubleshooting Workflows** - Complex sequences (Verify BGP → Run CyPerf Test → Analyze Results) | [View Details](./6-agent-workflows/) |
+| `7-agent-subagents/` | Hierarchical Multi-Agent, Sub-Agent Delegation, Parent Orchestration, Dynamic Task Routing | **Hierarchical Network Operations** - Modular approach: one agent for security, another for performance benchmarking | [View Details](./7-agent-subagents/) |
+| `8-agent-rag-WIP/` | RAG Integration, Document Retrieval, Knowledge Base | **Documentation-Aware Agent** - Connect to technical documentation and network topologies *(Work in Progress)* | [View Details](./8-agent-rag-WIP/) |
+
+---
+
+### 🚀 Phase 4: Deployment & The "Automation Story"
+
+Deploy agents to production and enable integration with other systems.
+
+| Path | ADK Feature | Networking Use Case | Link |
+|------|-------------|---------------------|------|
+| `12-agent-deployment-vtxai/` | Vertex AI Agent Engine, Managed Runtime, State Management, Secure Code Execution, Enterprise Observability | **Vertex AI Agent Engine Deployment** - Managed enterprise-grade runtime with built-in playground UI | [View Details](./12-agent-deployment-vtxai/) |
+| `11-agent-deployment-cloudrun/` | Cloud Run Deployment, Cloud Build, IAM Policy Binding, Dockerfile Configuration, Serverless Containers | **Cloud Run Deployment** - Serverless containerized agent with automatic scaling and IAM access control | [View Details](./11-agent-deployment-cloudrun/) |
+| `13-agent-api-frontend/` | REST API, FastAPI, React Frontend | **REST API Integration** - Expose agents via REST API for consumption by other systems | [View Details](./13-agent-api-frontend/) |
+| `13-agent-streamlit-ui/` | Streamlit, Web UI, Interactive Chat | **Streamlit GUI** - Browser-based interface for engineers to interact without CLI | [View Details](./13-agent-streamlit-ui/) |
+
+---
+
+### 🔬 Phase 5: Specialized Use Cases
+
+Advanced patterns for specific operational requirements.
+
+| Path | ADK Feature | Networking Use Case | Link |
+|------|-------------|---------------------|------|
+| `9-agent-a2a-asp/` | RemoteA2aAgent, Agent Cards, HTTP Communication, Microservices Architecture | **Agent-to-Agent Communication** - Distributed NOC with agents communicating via HTTP | [View Details](./9-agent-a2a-asp/) |
+| `14-agent-ollama/` | LiteLLM, Ollama, Local LLM Execution | **Local LLM Execution** - Run agents with local models for sensitive network environments where data cannot leave premises | [View Details](./14-agent-ollama/) |
 
 ---
 

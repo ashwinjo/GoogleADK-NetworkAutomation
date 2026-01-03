@@ -18,7 +18,7 @@ playground:
 	@echo "|                                                                             |"
 	@echo "| 💡 Try asking: What's the weather in San Francisco?                         |"
 	@echo "|                                                                             |"
-	@echo "| 🔍 IMPORTANT: Select the 'basic_agent' folder to interact with your agent. |"
+	@echo "| 🔍 IMPORTANT: Select the 'app' folder to interact with your agent.          |"
 	@echo "==============================================================================="
 	uv run adk web . --port 8501 --reload_agents
 
@@ -28,11 +28,7 @@ playground:
 
 # Launch local development server with hot-reload
 local-backend:
-	ALLOW_ORIGINS="http://localhost:3000"  uv run uvicorn app.fast_api_app:app --host localhost --port 8000 --reload
-
-# Launch local development server with hot-reload
-local-backend-basic-agent:
-	ALLOW_ORIGINS="http://localhost:3000" uv run uvicorn basic_agent.fast_api_app:app --host localhost --port 9000 --reload
+	uv run uvicorn app.fast_api_app:app --host localhost --port 8000 --reload
 
 # ==============================================================================
 # Backend Deployment Targets
@@ -42,11 +38,11 @@ local-backend-basic-agent:
 # Usage: make deploy [IAP=true] [PORT=8080] - Set IAP=true to enable Identity-Aware Proxy, PORT to specify container port
 deploy:
 	PROJECT_ID=$$(gcloud config get-value project) && \
-	gcloud beta run deploy 1-basic-agent \
+	gcloud beta run deploy 14-agent-ollama \
 		--source . \
 		--memory "4Gi" \
 		--project $$PROJECT_ID \
-		--region "us-central1" \
+		--region "1" \
 		--no-allow-unauthenticated \
 		--no-cpu-throttling \
 		--labels "created-by=adk" \
