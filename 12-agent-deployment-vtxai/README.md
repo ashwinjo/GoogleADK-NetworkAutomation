@@ -1,16 +1,15 @@
 # 12-agent-deployment-vtxai
 
-A base ReAct agent built with Google's Agent Development Kit (ADK)
-Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
-
 Please ensure you have your Google Gemini API key set in your environment variables.
-export GOOGLE_API_KEY=<your-Google-Gemini-API-key>
 
+```bash
+export GOOGLE_API_KEY=<your-Google-Gemini-API-key>
+```
 ---
 
-## Network Use Case
+**Vertex AI Agent Engine Deployment for Network Automation** - 
 
-**Vertex AI Agent Engine Deployment for Network Automation** - This example demonstrates deploying ADK-based network automation agents to Vertex AI Agent Engine (formerly "Reasoning Engine"), Google Cloud's enterprise-grade managed runtime for AI agents. This deployment pattern offers:
+This example demonstrates deploying ADK-based network automation agents to Vertex AI Agent Engine (formerly "Reasoning Engine"), Google Cloud's enterprise-grade managed runtime for AI agents. This deployment pattern offers:
 
 - **Managed Serverless Platform**: No infrastructure management - automatic scaling for network operations
 - **Built-in State Management**: Native session and memory persistence across multi-turn conversations
@@ -27,7 +26,7 @@ This project showcases Vertex AI Agent Engine deployment patterns for ADK agents
 
 ### 1. Agent Engine Deployment
 
-- **Agent Starter Pack Enhancement**: `enhance --adk -d agent_engine` workflow
+- **Agent Starter Pack Enhancement**: `enhance --adk -d agent_engine` for existing non agent workflows
 - **Automated Deployment Script**: Custom deployment module with configuration management
 - **Entrypoint Configuration**: `agent_engine_app` module and `agent_engine` object
 - **Dependency Management**: UV-based requirements export and package handling
@@ -74,11 +73,12 @@ This project showcases Vertex AI Agent Engine deployment patterns for ADK agents
 
 ---
 
-## Deployment Instructions
+## Let's Deploy the Agent to Vertex AI Agent Engine
 
 ### Prerequisites
 
 Ensure you have:
+
 1. Google Cloud SDK installed and authenticated
 2. Google Gemini API key set in environment variables
 3. GCP project with Vertex AI API enabled
@@ -87,16 +87,39 @@ Ensure you have:
 
 If you have an existing agent, enhance it for Agent Engine deployment:
 
+**Note**: 
+
+If you are enhancing an existing agent that has been set to ```cloud run```, delete everything in the folderexcept the agent folder. 
+
+
 ```bash
 uvx agent-starter-pack enhance --adk -d agent_engine
 ```
 
-**Note**: Delete everything except the agent folder before running enhance.
+
+>If you don't have an existing agent, you can create a new one with the Agent Starter Pack:
+```bash
+uvx agent-starter-pack create <agent-folder-name>
+```
+and then in the interactive UI select "Vertex AI Agent Engine" as the deployment target.
 
 ### Step 2: Deploy to Vertex AI Agent Engine
 
 ```bash
 make deploy
+```
+** Note** :  Agent Folder Name is `basic_agent` so we using that in place of the default `app` references
+
+```bash
+deploy:
+	# Export dependencies to requirements file using uv export.
+	(uv export --no-hashes --no-header --no-dev --no-emit-project --no-annotate > basic_agent/app_utils/.requirements.txt 2>/dev/null || \
+	uv export --no-hashes --no-header --no-dev --no-emit-project > basic_agent/app_utils/.requirements.txt) && \
+	uv run -m basic_agent.app_utils.deploy \
+		--source-packages=./basic_agent \
+		--entrypoint-module=basic_agent.agent_engine_app \
+		--entrypoint-object=agent_engine \
+		--requirements-file=basic_agent/app_utils/.requirements.txt
 ```
 
 ### Example Deployment Output

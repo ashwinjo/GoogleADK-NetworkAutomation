@@ -1,13 +1,9 @@
 # 11-agent-deployment-cloudrun
 
-A base ReAct agent built with Google's Agent Development Kit (ADK)
-Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
-
 Please ensure you have your Google Gemini API key set in your environment variables.
 export GOOGLE_API_KEY=<your-Google-Gemini-API-key>
 
 ---
-
 
 ### Prerequisites
 
@@ -99,3 +95,20 @@ Service URL: https://google-adk-network-automation-216136305446.us-central1.run.
 - **Region**: Modify `--region` parameter as needed
 
 ---
+
+### Customization
+
+If you chnage your agent folder name from `app` to lets's say `basic_agent`, you will need to update.
+
+Dockerfile:
+```bash
+COPY ./basic_agent ./basic_agent
+CMD ["uv", "run", "uvicorn", "basic_agent.fast_api_app:app", "--host", "0.0.0.0", "--port", "8080"]
+```
+
+Makefile:
+```bash
+local-backend:
+	uv run uvicorn basic_agent.fast_api_app:app --host localhost --port 8000 --reload
+
+```
