@@ -233,7 +233,7 @@ Deploy agents to production and enable integration with other systems.
 |------|-------------|---------------------|------|
 | `12-agent-deployment-vtxai/` | Vertex AI Agent Engine, Managed Runtime, State Management, Secure Code Execution, Enterprise Observability | **Vertex AI Agent Engine Deployment** - Managed enterprise-grade runtime with built-in playground UI | [View Details](./12-agent-deployment-vtxai/) |
 | `11-agent-deployment-cloudrun/` | Cloud Run Deployment, Cloud Build, IAM Policy Binding, Dockerfile Configuration, Serverless Containers | **Cloud Run Deployment** - Serverless containerized agent with automatic scaling and IAM access control | [View Details](./11-agent-deployment-cloudrun/) |
-| `13-agent-api-frontend/` | REST API, FastAPI, React Frontend | **REST API Integration** - Expose agents via REST API for consumption by other systems | [View Details](./13-agent-api-frontend/) |
+| `13-agent-react-frontend/` | REST API, FastAPI, React Frontend | **REST API Integration** - Expose agents via REST API for consumption by other systems | [View Details](./13-agent-react-frontend/) |
 | `13-agent-streamlit-ui/` | Streamlit, Web UI, Interactive Chat | **Streamlit GUI** - Browser-based interface for engineers to interact without CLI | [View Details](./13-agent-streamlit-ui/) |
 
 ---

@@ -5,7 +5,9 @@ Agent-to-Agent (A2A) Communication using Google's Agent Development Kit (ADK) an
 ```uvx agent-starter-pack create -p -a adk_a2a_base```
 
 Please ensure you have your Goggle Gemini API key set in your environment variables.
+```bash
 export GOOGLE_API_KEY=<your-Google-Gemini-API-key>
+```
 
 ---
 
@@ -209,7 +211,7 @@ Security Agent incorporates connectivity data into security assessment
 
 ---
 
-## Deployment Guide
+## Let's Run the Local and Remote Agents
 
 ### Running All Three Agents
 
@@ -217,7 +219,8 @@ Security Agent incorporates connectivity data into security assessment
 ```bash
 cd remoteRouterConnectivityAgent
 make install
-PORT=8000 make local-backend
+make local-backend
+# Edit Makefile to set the port to 8000 for `local-backend` command
 # Runs on http://localhost:8000
 # Agent card: http://localhost:8000/a2a/app/.well-known/agent-card.json
 ```
@@ -226,7 +229,9 @@ PORT=8000 make local-backend
 ```bash
 cd remoteRouterSecurityAgent
 make install
-PORT=8001 make local-backend
+make local-backend
+
+# Edit Makefile to set the port to 8001 for `local-backend` command
 # Runs on http://localhost:8001
 # Agent card: http://localhost:8001/a2a/app/.well-known/agent-card.json
 ```
