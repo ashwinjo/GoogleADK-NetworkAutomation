@@ -137,16 +137,7 @@ make install && make playground
 ---
 
 ## Supported Local Models
-
 Any model supported by Ollama works with this setup:
-
-| Model | Size | Use Case |
-|-------|------|----------|
-| `gemma3n` | 2B-9B | Fast inference, good for simple reviews |
-| `llama3.2` | 3B-90B | Strong reasoning, complex architectures |
-| `mistral` | 7B | Balanced performance and quality |
-| `codellama` | 7B-34B | Code-heavy network configs |
-| `mixtral` | 8x7B | Best quality, requires more resources |
 
 ---
 
