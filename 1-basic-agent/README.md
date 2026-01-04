@@ -1,7 +1,5 @@
 # 1-basic-agent
 
-A base ReAct agent built with Google's Agent Development Kit (ADK)
-Agent generated with [`googleCloudPlatform/agent-starter-pack`](https://github.com/GoogleCloudPlatform/agent-starter-pack) version `0.29.3`
 
 Please ensure you have your Goggle Gemini API key set in your environment variables.
 export GOOGLE_API_KEY=<your-Google-Gemini-API-key>
