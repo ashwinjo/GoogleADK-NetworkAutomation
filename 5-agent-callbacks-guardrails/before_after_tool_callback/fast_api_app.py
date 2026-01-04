@@ -13,19 +13,34 @@
 # limitations under the License.
 
 import os
+import logging
+import warnings
 
 import google.auth
 from fastapi import FastAPI
 from google.adk.cli.fast_api import get_fast_api_app
-from google.cloud import logging as google_cloud_logging
 
 from app.app_utils.telemetry import setup_telemetry
 from app.app_utils.typing import Feedback
 
+# Suppress Pydantic warnings about JSON schema generation for internal ADK types
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+
 setup_telemetry()
-_, project_id = google.auth.default()
-logging_client = google_cloud_logging.Client()
-logger = logging_client.logger(__name__)
+
+# Try to initialize Google Cloud logging, fall back to standard logging if not available
+try:
+    from google.cloud import logging as google_cloud_logging
+    _, project_id = google.auth.default()
+    logging_client = google_cloud_logging.Client(project=project_id)
+    logger = logging_client.logger(__name__)
+    print(f"✅ Google Cloud Logging initialized for project: {project_id}")
+except Exception as e:
+    # Fall back to standard Python logging for local development
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
+    print(f"⚠️  Google Cloud Logging not available, using standard logging: {e}")
+
 allow_origins = (
     os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
 )
@@ -51,6 +66,78 @@ app.title = "5-agent-clbk-guardrails"
 app.description = "API for interacting with the Agent 5-agent-clbk-guardrails"
 
 
+# Workaround for Pydantic schema generation issue with httpx.Client
+# Override the openapi method to catch and handle the schema generation error
+def custom_openapi():
+    """Generate OpenAPI schema with error handling for unsupported types."""
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    try:
+        from fastapi.openapi.utils import get_openapi
+        openapi_schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+        )
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+    except Exception as e:
+        logger_module = logging.getLogger(__name__)
+        logger_module.warning(f"Failed to generate full OpenAPI schema: {e}")
+        
+        # Try to generate a partial schema by filtering out problematic routes
+        from fastapi.openapi.utils import get_openapi
+        from fastapi.routing import APIRoute
+        
+        # Get routes that can be documented
+        safe_routes = []
+        for route in app.routes:
+            if isinstance(route, APIRoute):
+                # Try to generate schema for this route
+                try:
+                    test_schema = get_openapi(
+                        title="test",
+                        version="0.0.1",
+                        routes=[route],
+                    )
+                    safe_routes.append(route)
+                except Exception:
+                    # Skip this route if it causes errors
+                    logger_module.debug(f"Skipping route {route.path} due to schema generation error")
+                    pass
+            else:
+                # Include non-APIRoute routes (like mounts)
+                safe_routes.append(route)
+        
+        # Generate schema with safe routes only
+        try:
+            openapi_schema = get_openapi(
+                title=app.title,
+                version=app.version,
+                description=app.description + "\n\n⚠️ Note: Some advanced routes from ADK are not displayed due to OpenAPI limitations.",
+                routes=safe_routes,
+            )
+            app.openapi_schema = openapi_schema
+            return app.openapi_schema
+        except Exception as fallback_error:
+            logger_module.error(f"Failed to generate even partial schema: {fallback_error}")
+            # Return absolute minimal schema as last resort
+            return {
+                "openapi": "3.0.2",
+                "info": {
+                    "title": app.title,
+                    "version": app.version,
+                    "description": app.description + "\n\n⚠️ Note: API documentation could not be generated.",
+                },
+                "paths": {},
+            }
+
+
+app.openapi = custom_openapi
+
+
 @app.post("/feedback")
 def collect_feedback(feedback: Feedback) -> dict[str, str]:
     """Collect and log feedback.
@@ -61,7 +148,12 @@ def collect_feedback(feedback: Feedback) -> dict[str, str]:
     Returns:
         Success message
     """
-    logger.log_struct(feedback.model_dump(), severity="INFO")
+    try:
+        # Try Google Cloud structured logging first
+        logger.log_struct(feedback.model_dump(), severity="INFO")
+    except AttributeError:
+        # Fall back to standard logging
+        logger.info(f"Feedback received: {feedback.model_dump()}")
     return {"status": "success"}
 
 

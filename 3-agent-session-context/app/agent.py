@@ -43,7 +43,8 @@ def get_bgp_summary(router_name: str, tool_context: ToolContext) -> dict:
     """
     logging.info(f"Running get_bgp_summary for router: {router_name}")
 
-    # Persist context across turns
+    # Persist context across 
+    # Set the active router key in session.state
     tool_context.state["active_router"] = router_name
     tool_context.state["last_tool_used"] = "get_bgp_summary"
 
@@ -73,6 +74,7 @@ def get_bgp_summary(router_name: str, tool_context: ToolContext) -> dict:
 # -------------------------------------------------------------------
 
 def instruction_with_state(context: ReadonlyContext) -> str:
+     # Set the active router key in session.state
     router = context.state.get("active_router", "no router selected")
 
     return f"""
@@ -100,9 +102,9 @@ root_agent = Agent(
     ),
     instruction=instruction_with_state,
     tools=[
-        FunctionTool(get_bgp_summary) # NOte the use of FunctionTool here
+        FunctionTool(get_bgp_summary) # NOte the use of FunctionTool here when using context inside the custom function
     ],
-    # Automatically stores LLM responses in session.state["response"]
+    # Automatically stores LLM responses in session.state
     output_key="response",
 )
 

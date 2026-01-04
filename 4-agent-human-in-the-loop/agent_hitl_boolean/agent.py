@@ -1,17 +1,3 @@
-# Copyright 2025 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 """
 Author: Ashwin Joshi
 
@@ -49,7 +35,37 @@ def confirmation_if_not_spof_router(router_name: str) -> bool:
     return router_name == "r1-sea3"
 
 
-# Explicit True/False confirmation
+## When you will explicitly need to use True/False confirmation every time
+
+# root_agent = Agent(
+#     name="hitl_network_agent",
+#     model="gemini-2.5-flash",
+#     instruction="""
+#     You are a Network Operations Assistant.
+
+#     Rules:
+#     - Use read_router_config for read-only operations.
+#     - Use write_router_config for configuration changes.
+#     - Configuration writes may require human approval.
+#     - Always return tool results to the user.
+#     - Act like a cautious Tier-2 NOC engineer.
+#     """,
+#     tools=[
+#         # We use function tool for the boolean confirmation functions
+#         FunctionTool(
+#             write_router_config,
+#             require_confirmation=True # Explicit True/False confirmation
+#         ),
+#         read_router_config
+#     ],
+#     generate_content_config=types.GenerateContentConfig(
+#         temperature=0.1
+#     ),
+# )
+
+
+## When a third function is needed to be used for you to confirm action
+
 root_agent = Agent(
     name="hitl_network_agent",
     model="gemini-2.5-flash",
