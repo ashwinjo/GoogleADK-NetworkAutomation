@@ -21,33 +21,29 @@
 - [📖 Overview](#-overview)
   - [🎯 Audience for this project ?](#-audience-for-this-project-)
   - [📦 What's Included?](#-whats-included)
-- [🚀 Getting Started](#-getting-started)
-  - [✅ Prerequisites](#prerequisites)
-  - [Auth with Google Cloud](#auth-with-google-cloud)
-  - [⚡ Quick Start](#-quick-start)
-  - [🎨 Agent Starter Pack](#-agent-starter-pack-all-the-folders-have-been-created-with-the-agent-starter-pack)
-- [📁 Project Structure](#-project-structure)
-  - [🎮 Running Examples Locally](#-running-examples-locally)
-- [🎯 Learning Path & Use Cases](#-learning-path--use-cases)
+- [🎯 Tutorial Contents and Sections](#-tutorial-contents-and-sections)
   - [📘 Phase 1: The Foundations](#-phase-1-the-foundations)
-  - [🛡️ Phase 2: Professional Engineering & Governance](#-phase-2-professional-engineering--governance)
-  - [🏗️ Phase 3: Advanced Architectures](#-phase-3-advanced-architectures)
+  - [🛡️ Phase 2: Professional Engineering & Governance](#️-phase-2-professional-engineering--governance)
+  - [🏗️ Phase 3: Advanced Architectures](#️-phase-3-advanced-architectures)
   - [🚀 Phase 4: Deployment & The "Automation Story"](#-phase-4-deployment--the-automation-story)
   - [🔬 Phase 5: Specialized Use Cases](#-phase-5-specialized-use-cases)
-- [✨ Key Features](#-key-features)
+- [🚀 Let's get started](#-lets-get-started)
+  - [✅ Prerequisites](#-prerequisites)
+  - [🎨 Agent Starter Pack](#-agent-starter-pack)
+- [🌐 Auth with Google Cloud](#-auth-with-google-cloud)
+- [📁 Project Structure](#-project-structure)
+- [⚡ Quick Start](#-quick-start)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
 - [🔮 Long-Term Vision](#-long-term-vision)
-
-
-
-
 
 ## 📖 Overview
 
 Network engineers need AI systems that are **understandable**, **trustworthy**, and **operationally relevant**. Traditional script-based automation is brittle and lacks contextual reasoning, while black-box AI chatbots lack the control, observability, and accountability required for production network operations.
 
 This project bridges that gap by demonstrating how Google's Agent Development Kit (ADK)—one of the leading agentic frameworks—enables network engineers to build **agent-based systems** that combine the flexibility of AI with the rigor of production operations.
+
+Read basics about Agents, Framework and Google ADK and Agent Starter Pack in [Introduction.md](./Introduction.md) file.
 
 ### 🎯 Audience for this project ?
 
@@ -68,132 +64,17 @@ This repository provides a collection of **complete, production-ready agents** (
 - 🧪 **Safe Testing Environment** - Mocked backends for safe experimentation (swap with real APIs when ready)
 
 ---
-
-## 🚀 Getting Started
-
-### ✅ Prerequisites
-
-Before you begin, ensure you have:
-- 🐍 **[uv](https://docs.astral.sh/uv/getting-started/installation/)** - Python package manager (handles all dependency management)
-- ☁️ **[Google Cloud SDK](https://cloud.google.com/sdk/docs/install)** - For GCP services integration
-- 🔨 **[make](https://www.gnu.org/software/make/)** - Build automation (pre-installed on most Unix systems)
-- 🔑 **Google Gemini API Key** - Set as environment variable: 
- ```bash
- export GOOGLE_API_KEY=<your-key>
- ```
-> **Note:** <br>You can get your Google Gemini API key from [Google Cloud Console](https://ai.google.dev/gemini-api/docs/api-key)
-
-## 🌐 Auth with Google Cloud 
-Once you have the Google Cloud SDK installed, you need to authenticate with Google Cloud so that once you test agent locally you can eventually deploy it to Cloud.
-
-```bash
-gcloud auth login
-```
-
-```bash
-gcloud config set project <your-project-id>
-```
-
-```bash
-gcloud config set region <your-region>
-```
-
-```bash
-gcloud auth login --update-adc --project <your-project-id>
-```
-
-### ⚡ Quick Start
-
-0. **📚 Find sample queries** for every agent in the [SAMPLE_QUERIES.md](./SAMPLE_QUERIES.md) file.
-
-1. **📥 Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/GoogleADK-NetworkAutomation.git
-   cd GoogleADK-NetworkAutomation
-   ```
-
-2. **▶️ Choose an example and run it**
-   ```bash
-   cd 1-basic-agent
-   make install && make playground
-   ```
-
-   **Note:** <br>Without Agent Starter Pack, you would have to use 
-   Local Development & Testing (`adk web`, `adk run`, `adk api_server`) commands to run and interact with the agent.
-   Under the hood, Agent Starter Pack is running same commands . Check the Makefile for more details.
-
-   The playground will launch a web interface where you can interact with the agent.
-
-   ```bash
-  
-   +-----------------------------------------------------------------------------+
-   | ADK Web Server started                                                      |
-   |                                                                             |
-   | For local testing, access at http://127.0.0.1:8501.                         |
-   +-----------------------------------------------------------------------------+
-   ```
-3. **🔍 Explore the code**
-   - 📖 Review `README.md` in each example for use case details
-   - 💻 Examine `agent.py` files to understand agent implementation
-
-### 🎨 Agent Starter Pack (All the folders have been created with the Agent Starter Pack)
-
-For scaffolding new agents, use Google Cloud's **[agent-starter-pack](https://github.com/GoogleCloudPlatform/agent-starter-pack)**—an open-source CLI that handles infrastructure setup, CI/CD, and observability.
-
-**✨ Benefits:**
-- ⚡ Generate production-ready agent projects in seconds
-- **🎯 Focus on agent logic (prompts, tools, RAG) instead of boilerplate**
-- 📋 Built-in best practices for deployment and monitoring
-- 🔗 Seamless integration with Google Cloud services
-
-**📚 Learn more:** See [AgentStarterPack.md](AgentStarterPack.md) for detailed instructions.
-
----
-
-## 📁 Project Structure
-
-Each example follows a consistent structure for easy navigation:
-
-```
-1-basic-agent/                    # Parent folder (example name)
-├── README.md                     # 📄 Use case documentation and setup
-├── basic_agent/                  # 🤖 Agent implementation folder
-│   ├── __init__.py
-│   ├── agent.py                  # 🧠 Core agent logic [Main Agent] << YOU WILL WORK ON THIS FILE >>
-│   ├── fast_api_app.py           # 🌐 Web interface (optional)
-│   └── app_utils/                # 🔧 Utilities and helpers [Tools]
-├── tests/                        # 🧪 Unit and integration tests
-│   ├── unit/
-│   └── integration/
-├── pyproject.toml               # 📦 Project dependencies (uv) [Dependencies]
-├── uv.lock                      # 🔒 Locked dependencies [Dependencies]
-├── Makefile                     # ⚙️ Common tasks (install, test, deploy) [Makefile]
-└── Dockerfile                   # 🐳 Container configuration [Dockerfile]
-```
-
-### 🎮 Running Examples Locally
-
-Navigate to any example folder and execute:
-
-```bash
-make install && make playground
-```
-
-**💡 Note:** No virtual environment management needed—`uv` handles dependency isolation automatically.
+## 🎯 Tutorial Contents and Sections:
 
 
+![Google ADK for Network Engineers Contents](images/coursebp.png)
 
-## 🎯 Learning Path & Use Cases
-
-Follow this structured learning path to master Google ADK for network automation:
-
----
 
 ### 📘 Phase 1: The Foundations
 
 Start here to understand the core concepts of AI agents.
 
-| Path | ADK Feature | Networking Use Case | Link |
+| Topic | ADK Feature | Networking Use Case | Link |
 |------|-------------|---------------------|------|
 | `1-basic-agent/` | Agent Setup, Model Config, Output Schema, Planners, Session Management | **Network Design Review Agent** - AI-powered architectural review for network designs | [View Details](./1-basic-agent/) |
 | `2-basic-agent-with-tools/` | Custom Tools, Built-in Tools, Parallel Execution, Agent-as-Tool, MCP Integration | **BGP Troubleshooting Assistant** - Systematic diagnosis of BGP session issues using multiple tool patterns | [View Details](./2-basic-agent-with-tools/) |
@@ -249,18 +130,165 @@ Advanced patterns for specific operational requirements.
 
 ---
 
-## ✨ Key Features
+## 🚀 Let's get started:
 
-- 🔧 **Production-Ready Examples** - Complete implementations, not code snippets
-- 🛡️ **Safety First** - Mock backends prevent accidental production changes
-- 📚 **Comprehensive Documentation** - Every example includes detailed README with ADK feature mapping
-- 🧪 **Full Test Coverage** - Unit and integration tests included
-- ☁️ **Cloud Deployment Ready** - Examples include Cloud Run and Vertex AI deployments
-- 🔍 **Built-in Observability** - Logging, tracing, and monitoring patterns
-- 🤝 **Human-in-the-Loop** - Approval workflows and safety guardrails
-- 🔄 **Workflow Orchestration** - Sequential, parallel, and loop patterns
+### ✅ Prerequisites
 
+Before you begin, ensure you have:
+- 🐍 **[uv](https://docs.astral.sh/uv/getting-started/installation/)** - Python package manager (handles all dependency management)
+- ☁️ **[Google Cloud SDK](https://cloud.google.com/sdk/docs/install)** - For GCP services integration
+- 🔨 **[make](https://www.gnu.org/software/make/)** - Build automation (pre-installed on most Unix systems)
+- 🔑 **Google Gemini API Key** - Set as environment variable: 
+
+ ```bash
+ export GOOGLE_API_KEY=<your-key>
+ ```
+> **Note:** <br>You can get your Google Gemini API key from [Google Cloud Console](https://ai.google.dev/gemini-api/docs/api-key)
+
+### 🎨 Agent Starter Pack
+For scaffolding new agents, we have used  Google's Agent Starter Pack.
+**[agent-starter-pack](https://github.com/GoogleCloudPlatform/agent-starter-pack)**—is Google's open-source CLI that handles infrastructure setup, CI/CD, and observability. for agents so developers can focus on agent logic (prompts, tools, RAG) instead of boilerplate.
+
+
+![ASP](images/asp_base.png)
+
+By default, the agent folder name is `app` and the agent file name is `agent.py` when we create the agent with the Agent Starter Pack. You can change the folder name and agent file name as you wish. However, in that case you need to modify the Makefile and other files to match the new names.
+
+
+## 🌐 Auth with Google Cloud 
+Once you have the Google Cloud SDK installed, you need to authenticate with Google Cloud so that once you test agent locally you can eventually deploy it to Cloud.
+
+```bash
+gcloud auth login
+```
+
+```bash
+gcloud config set project <your-project-id>
+```
+
+```bash
+gcloud config set region <your-region>
+```
+
+```bash
+gcloud auth login --update-adc --project <your-project-id>
+```
+
+
+## 📁 Project Structure  ( Please note the naming convention of the folders)
+
+Each example follows a consistent structure for easy navigation:
+
+I have changed the agent folder name to `basic_agent` from `app` since I wanrt to match the purpose of the agent in this case.
+
+```
+1-basic-agent/                    # Agent Parent folder (example name)
+├── README.md                     
+├── basic_agent/                  # Agent folder
+│   ├── __init__.py
+│   ├── agent.py                  # 🧠 Core agent logicfile [Main Agent] 
+│   ├── fast_api_app.py           # 🌐 Start API Server to interact with the agent
+│   └── app_utils/                # 🔧 Utilities and helpers [Tools]
+├── tests/                        
+│   ├── unit/
+│   └── integration/
+├── pyproject.toml               # 📦 Project dependencies (uv) [Dependencies]
+├── uv.lock                      # 🔒 Locked dependencies [Dependencies]
+├── Makefile                     # ⚙️ Common tasks (install, test, deploy) [Makefile]
+└── Dockerfile                   # 🐳 Container configuration to push to Cloud Run [Dockerfile]
+```
+
+
+** If  we have multiple agents in same folder there will be multiple agent.py files inside those agent folders.
+
+Example:
+
+```bash
+basic-agent-with-tools/
+├── agent_as_tool/
+├── agent_google_cloud_tools_WIP/
+├── agent_custom_tools/
+├── agent_builtin_tools/
+├── agent_mcp_tools_calls/
+├── parallel_functions_calls/
+├── tests/
+├── Makefile
+├── pyproject.toml
+├── uv.lock
+├── Dockerfile
+└── README.md 
+```
+
+
+How to interact with the agent ?
+
+0) Always first in the Agent Parent folder, run below to install the dependencies.
+
+```bash
+cd <agent-parent-folder>
+make install
+```
+
+1) To spin up a local development UI for agent interacction. ( Web UI Interaction with the agent)
+
+```bash
+make playground
+```
+
+2) To spin up the local development server with hot-reload. ( API Interaction with the agent)
+```bash
+make local-backend (Some agents have modified local-backend make command to match the agent folder name. Check Makefile before running the command.)
+```
+**💡 Note:** No virtual environment management needed—`uv` handles dependency isolation automatically.
+
+
+3) Chat with the agent using CLI
+
+```bash
+cd <agent-parent-folder>
+uv run adk run <agent-folder>
+```
+
+
+### Very Important:
+> Open Makefile to understand the underlying adk command being used.  We need to modify these commands when we modify the default names of files created as a part of the Agent Starter Pack. You will see this in the indidual aagent readme.
 ---
+
+### ⚡ Quick Start
+
+0. **📚 Find sample queries** to use with every agent in the [SAMPLE_QUERIES.md](./SAMPLE_QUERIES.md) file.
+
+1. **📥 Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/GoogleADK-NetworkAutomation.git
+   cd GoogleADK-NetworkAutomation
+   ```
+
+2. **▶️ Choose an example and run it**
+   ```bash
+   cd 1-basic-agent
+   make install && make playground
+   ```
+
+   **Note:** <br>Without Agent Starter Pack, you would have to use 
+   Local Development & Testing (`adk web`, `adk run`, `adk api_server`) commands to run and interact with the agent.
+   Under the hood, Agent Starter Pack is running same commands . Check the Makefile for more details.
+
+   The playground will launch a web interface where you can interact with the agent.
+
+   ```bash
+  
+   +-----------------------------------------------------------------------------+
+   | ADK Web Server started                                                      |
+   |                                                                             |
+   | For local testing, access at http://127.0.0.1:8501.                         |
+   +-----------------------------------------------------------------------------+
+   ```
+3. **🔍 Explore the code**
+   - 📖 Review `README.md` in each example for use case details
+   - 💻 Examine `agent.py` files to understand agent implementation
+
+
 
 ## 🤝 Contributing
 
@@ -279,20 +307,6 @@ Please ensure contributions maintain the project's focus on clarity, safety, and
 ## 📄 License
 
 This project is provided as-is for educational and operational purposes. Please review individual dependencies and ensure compliance with your organization's policies.
-
----
-
-## 🔮 Long-Term Vision
-
-This project aims to help network engineers:
-
-- 🔄 **Transition from Script-Based to Agent-Based Operations** - Move beyond brittle automation
-- 💪 **Build Confidence in AI Systems** - Through enforced observability, control, and accountability
-- 🎯 **Design Agents as Disciplined Operators** - AI systems that behave predictably and safely
-- 🌉 **Bridge the Skills Gap** - Make advanced AI capabilities accessible to network operators
-
-> **💎 Guiding Principle:**  
-> *If a concept cannot be explained clearly to a network engineer, it does not belong here.*
 
 ---
 

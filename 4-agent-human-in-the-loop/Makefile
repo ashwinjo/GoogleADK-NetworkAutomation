@@ -27,8 +27,12 @@ playground:
 # ==============================================================================
 
 # Launch local development server with hot-reload
-local-backend:
-	uv run uvicorn app.fast_api_app:app --host localhost --port 8000 --reload
+local-backend-agent_hitl_boolean:
+	uv run uvicorn agent_hitl_boolean.fast_api_app:app --host localhost --port 8000 --reload
+
+local-backend-tool_usage:
+	uv run uvicorn agent_hitl_tool_use.fast_api_app:app --host localhost --port 8000 --reload
+
 
 # ==============================================================================
 # Backend Deployment Targets

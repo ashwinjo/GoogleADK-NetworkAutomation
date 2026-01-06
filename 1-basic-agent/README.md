@@ -2,8 +2,9 @@
 
 
 Please ensure you have your Goggle Gemini API key set in your environment variables.
+```bash
 export GOOGLE_API_KEY=<your-Google-Gemini-API-key>
-
+```
 ---
 
 ## Network Use Case
@@ -81,8 +82,8 @@ This project showcases multiple ADK capabilities through three different impleme
 - **Headless Operation**: CLI-based agent interaction
 
 ---
-
 Edit the Makefile to change the project name here based on the agent we will be calling
+
 
 ```bash 
 # Launch local development server with hot-reload

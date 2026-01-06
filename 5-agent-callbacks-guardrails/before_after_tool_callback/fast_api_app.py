@@ -20,8 +20,8 @@ import google.auth
 from fastapi import FastAPI
 from google.adk.cli.fast_api import get_fast_api_app
 
-from app.app_utils.telemetry import setup_telemetry
-from app.app_utils.typing import Feedback
+from before_after_tool_callback.app_utils.telemetry import setup_telemetry
+from before_after_tool_callback.app_utils.typing import Feedback
 
 # Suppress Pydantic warnings about JSON schema generation for internal ADK types
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")

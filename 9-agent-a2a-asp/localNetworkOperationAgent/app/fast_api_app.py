@@ -1,98 +1,127 @@
-# Copyright 2025 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 import os
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+import logging
+import warnings
 
 import google.auth
-from a2a.server.apps import A2AFastAPIApplication
-from a2a.server.request_handlers import DefaultRequestHandler
-from a2a.server.tasks import InMemoryTaskStore
-from a2a.types import AgentCapabilities, AgentCard
-from a2a.utils.constants import (
-    AGENT_CARD_WELL_KNOWN_PATH,
-    EXTENDED_AGENT_CARD_PATH,
-)
 from fastapi import FastAPI
-from google.adk.a2a.executor.a2a_agent_executor import A2aAgentExecutor
-from google.adk.a2a.utils.agent_card_builder import AgentCardBuilder
-from google.adk.artifacts import GcsArtifactService, InMemoryArtifactService
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from google.cloud import logging as google_cloud_logging
+from google.adk.cli.fast_api import get_fast_api_app
 
-from app.agent import app as adk_app
 from app.app_utils.telemetry import setup_telemetry
 from app.app_utils.typing import Feedback
 
+# Suppress Pydantic warnings about JSON schema generation for internal ADK types
+warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+
 setup_telemetry()
-_, project_id = google.auth.default()
-logging_client = google_cloud_logging.Client()
-logger = logging_client.logger(__name__)
+
+# Try to initialize Google Cloud logging, fall back to standard logging if not available
+try:
+    from google.cloud import logging as google_cloud_logging
+    _, project_id = google.auth.default()
+    logging_client = google_cloud_logging.Client(project=project_id)
+    logger = logging_client.logger(__name__)
+    print(f"✅ Google Cloud Logging initialized for project: {project_id}")
+except Exception as e:
+    # Fall back to standard Python logging for local development
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.INFO)
+    print(f"⚠️  Google Cloud Logging not available, using standard logging: {e}")
+
+allow_origins = (
+    os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
+)
 
 # Artifact bucket for ADK (created by Terraform, passed via env var)
 logs_bucket_name = os.environ.get("LOGS_BUCKET_NAME")
-artifact_service = (
-    GcsArtifactService(bucket_name=logs_bucket_name)
-    if logs_bucket_name
-    else InMemoryArtifactService()
+
+AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# In-memory session configuration - no persistent storage
+session_service_uri = None
+
+artifact_service_uri = f"gs://{logs_bucket_name}" if logs_bucket_name else None
+
+app: FastAPI = get_fast_api_app(
+    agents_dir=AGENT_DIR,
+    web=True,
+    artifact_service_uri=artifact_service_uri,
+    allow_origins=allow_origins,
+    session_service_uri=session_service_uri,
+    otel_to_cloud=True,
 )
-
-runner = Runner(
-    app=adk_app,
-    artifact_service=artifact_service,
-    session_service=InMemorySessionService(),
-)
-
-request_handler = DefaultRequestHandler(
-    agent_executor=A2aAgentExecutor(runner=runner), task_store=InMemoryTaskStore()
-)
-
-A2A_RPC_PATH = f"/a2a/{adk_app.name}"
+app.title = "14-agent-ollama"
+app.description = "API for interacting with the Agent 14-agent-ollama"
 
 
-async def build_dynamic_agent_card() -> AgentCard:
-    """Builds the Agent Card dynamically from the root_agent."""
-    agent_card_builder = AgentCardBuilder(
-        agent=adk_app.root_agent,
-        capabilities=AgentCapabilities(streaming=True),
-        rpc_url=f"{os.getenv('APP_URL', 'http://0.0.0.0:8000')}{A2A_RPC_PATH}",
-        agent_version=os.getenv("AGENT_VERSION", "0.1.0"),
-    )
-    agent_card = await agent_card_builder.build()
-    return agent_card
+# Workaround for Pydantic schema generation issue with httpx.Client
+# Override the openapi method to catch and handle the schema generation error
+def custom_openapi():
+    """Generate OpenAPI schema with error handling for unsupported types."""
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    try:
+        from fastapi.openapi.utils import get_openapi
+        openapi_schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+        )
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+    except Exception as e:
+        logger_module = logging.getLogger(__name__)
+        logger_module.warning(f"Failed to generate full OpenAPI schema: {e}")
+        
+        # Try to generate a partial schema by filtering out problematic routes
+        from fastapi.openapi.utils import get_openapi
+        from fastapi.routing import APIRoute
+        
+        # Get routes that can be documented
+        safe_routes = []
+        for route in app.routes:
+            if isinstance(route, APIRoute):
+                # Try to generate schema for this route
+                try:
+                    test_schema = get_openapi(
+                        title="test",
+                        version="0.0.1",
+                        routes=[route],
+                    )
+                    safe_routes.append(route)
+                except Exception:
+                    # Skip this route if it causes errors
+                    logger_module.debug(f"Skipping route {route.path} due to schema generation error")
+                    pass
+            else:
+                # Include non-APIRoute routes (like mounts)
+                safe_routes.append(route)
+        
+        # Generate schema with safe routes only
+        try:
+            openapi_schema = get_openapi(
+                title=app.title,
+                version=app.version,
+                description=app.description + "\n\n⚠️ Note: Some advanced routes from ADK are not displayed due to OpenAPI limitations.",
+                routes=safe_routes,
+            )
+            app.openapi_schema = openapi_schema
+            return app.openapi_schema
+        except Exception as fallback_error:
+            logger_module.error(f"Failed to generate even partial schema: {fallback_error}")
+            # Return absolute minimal schema as last resort
+            return {
+                "openapi": "3.0.2",
+                "info": {
+                    "title": app.title,
+                    "version": app.version,
+                    "description": app.description + "\n\n⚠️ Note: API documentation could not be generated.",
+                },
+                "paths": {},
+            }
 
 
-@asynccontextmanager
-async def lifespan(app_instance: FastAPI) -> AsyncIterator[None]:
-    agent_card = await build_dynamic_agent_card()
-    a2a_app = A2AFastAPIApplication(agent_card=agent_card, http_handler=request_handler)
-    a2a_app.add_routes_to_app(
-        app_instance,
-        agent_card_url=f"{A2A_RPC_PATH}{AGENT_CARD_WELL_KNOWN_PATH}",
-        rpc_url=A2A_RPC_PATH,
-        extended_agent_card_url=f"{A2A_RPC_PATH}{EXTENDED_AGENT_CARD_PATH}",
-    )
-    yield
-
-
-app = FastAPI(
-    title="remote-agent-2",
-    description="API for interacting with the Agent remote-agent-2",
-    lifespan=lifespan,
-)
+app.openapi = custom_openapi
 
 
 @app.post("/feedback")
@@ -105,7 +134,12 @@ def collect_feedback(feedback: Feedback) -> dict[str, str]:
     Returns:
         Success message
     """
-    logger.log_struct(feedback.model_dump(), severity="INFO")
+    try:
+        # Try Google Cloud structured logging first
+        logger.log_struct(feedback.model_dump(), severity="INFO")
+    except AttributeError:
+        # Fall back to standard logging
+        logger.info(f"Feedback received: {feedback.model_dump()}")
     return {"status": "success"}
 
 
