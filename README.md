@@ -145,17 +145,8 @@ Before you begin, ensure you have:
  ```
 > **Note:** <br>You can get your Google Gemini API key from [Google Cloud Console](https://ai.google.dev/gemini-api/docs/api-key)
 
-### 🎨 Agent Starter Pack
-For scaffolding new agents, we have used  Google's Agent Starter Pack.
-**[agent-starter-pack](https://github.com/GoogleCloudPlatform/agent-starter-pack)**—is Google's open-source CLI that handles infrastructure setup, CI/CD, and observability. for agents so developers can focus on agent logic (prompts, tools, RAG) instead of boilerplate.
+- **🌐 Auth with Google Cloud**
 
-
-![ASP](images/asp_base.png)
-
-By default, the agent folder name is `app` and the agent file name is `agent.py` when we create the agent with the Agent Starter Pack. You can change the folder name and agent file name as you wish. However, in that case you need to modify the Makefile and other files to match the new names.
-
-
-## 🌐 Auth with Google Cloud 
 Once you have the Google Cloud SDK installed, you need to authenticate with Google Cloud so that once you test agent locally you can eventually deploy it to Cloud.
 
 ```bash
@@ -173,6 +164,19 @@ gcloud config set region <your-region>
 ```bash
 gcloud auth login --update-adc --project <your-project-id>
 ```
+
+## 🎨 Agent Starter Pack
+For scaffolding new agents, we use  Google's Agent Starter Pack.
+
+**[agent-starter-pack](https://github.com/GoogleCloudPlatform/agent-starter-pack)**—is Google's open-source CLI that handles infrastructure setup, CI/CD, and observability. for agents so developers can focus on agent logic (prompts, tools, RAG) instead of boilerplate.
+
+
+
+![ASP](images/asp_base.png)
+
+By default, the agent folder name is `app` and the agent file name is `agent.py`. You can change the agent folder name as you wish. 
+
+However, in that case you need to modify the Makefile and other files to match the new name. I have explained changes that need to be made in individual agent README.md file.
 
 
 ## 📁 Project Structure  ( Please note the naming convention of the folders)
